@@ -1,7 +1,7 @@
 _This is a complete collection of my VRChat mods._
 (My mods were previously in separate repositories which was generally a bad idea)
 
-#### _Disclaimer_
+# _Disclaimer_
 
 Please be aware that any type of modifications to VRChat is a ToS violation and can lead to your account being banned.
 Use these mods at your own risk.
