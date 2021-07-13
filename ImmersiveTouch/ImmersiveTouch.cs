@@ -76,9 +76,9 @@ namespace ImmersiveTouch
             TryCapability();
         }
 
-        public static unsafe void OnAvatarChanged(IntPtr instance, IntPtr __0, IntPtr __1, IntPtr __2)
+        public static unsafe void OnAvatarChanged(IntPtr instance, IntPtr __0, IntPtr __1)
         {
-            Hooks.avatarChangedDelegate(instance, __0, __1, __2);
+            Hooks.avatarChangedDelegate(instance, __0, __1);
 
             try
             {

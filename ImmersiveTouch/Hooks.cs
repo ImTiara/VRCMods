@@ -10,7 +10,7 @@ namespace ImmersiveTouch
     public class Hooks
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void AvatarChangedDelegate(IntPtr instance, IntPtr __0, IntPtr __1, IntPtr __2);
+        public delegate void AvatarChangedDelegate(IntPtr instance, IntPtr __0, IntPtr __1);
         public static AvatarChangedDelegate avatarChangedDelegate;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -26,7 +26,7 @@ namespace ImmersiveTouch
             try
             {
                 // PDM's are scary:(
-                MethodInfo avatarChangedMethod = typeof(VRCAvatarManager).GetMethods().FirstOrDefault(method => method.Name.StartsWith("Method_Private_Void_ApiAvatar_GameObject_Action_1_Boolean_"));
+                MethodInfo avatarChangedMethod = typeof(VRCAvatarManager).GetMethods().FirstOrDefault(method => method.Name.StartsWith("Method_Private_Boolean_ApiAvatar_GameObject_"));
 
                 IntPtr original = *(IntPtr*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(avatarChangedMethod).GetValue(null);
                 MelonUtils.NativeHookAttach((IntPtr)(&original), typeof(ImmersiveTouch).GetMethod(nameof(ImmersiveTouch.OnAvatarChanged), BindingFlags.Static | BindingFlags.Public)!.MethodHandle.GetFunctionPointer());
