@@ -25,7 +25,6 @@ namespace ImmersiveTouch
         {
             try
             {
-                // PDM's are scary:(
                 MethodInfo avatarChangedMethod = typeof(VRCAvatarManager).GetMethods().FirstOrDefault(method => method.Name.StartsWith("Method_Private_Boolean_ApiAvatar_GameObject_"));
 
                 IntPtr original = *(IntPtr*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(avatarChangedMethod).GetValue(null);
