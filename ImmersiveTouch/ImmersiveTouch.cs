@@ -39,8 +39,6 @@ namespace ImmersiveTouch
         {
             TurbonesEx.SetIsPresent();
 
-            MelonLogger.Msg("Using Turbones: " + TurbonesEx.isPresent);
-
             MelonPreferences.CreateCategory(GetType().Name, "Immersive Touch");
             MelonPreferences.CreateEntry(GetType().Name, "Enable", true, "Enable Immersive Touch");
             MelonPreferences.CreateEntry(GetType().Name, "HapticAmplitude", 100.0f, "Haptic Amplitude (%)");
@@ -159,6 +157,8 @@ namespace ImmersiveTouch
 
         private static void TryCapability()
         {
+            UnregisterTurbonesColliders();
+
             if (!m_Enable || Manager.GetLocalVRCPlayer() == null)
             {
                 m_IsCapable = false;
@@ -169,17 +169,6 @@ namespace ImmersiveTouch
             {
                 Animator animator = Manager.GetLocalAvatarAnimator();
                 if (animator == null || !animator.isHuman) NotCapable();
-
-                if (TurbonesEx.isPresent)
-                {
-                    foreach (var container in m_RegistratedColliderPointers)
-                    {
-                        foreach (var pointer in container.Value)
-                        {
-                            TurbonesEx.UnregisterColliderForCollisionFeedback(pointer);
-                        }
-                    }
-                }
 
                 m_RegistratedColliderPointers.Clear();
                 m_RegistratedColliderPointers.Add(1, new List<IntPtr>());
@@ -226,6 +215,19 @@ namespace ImmersiveTouch
                 MelonLogger.Msg("This avatar is not capable for Immersive Touch.");
                 m_IsCapable = false;
                 return;
+            }
+        }
+
+        private static void UnregisterTurbonesColliders()
+        {
+            if (!TurbonesEx.isPresent) return;
+
+            foreach (var container in m_RegistratedColliderPointers)
+            {
+                foreach (var pointer in container.Value)
+                {
+                    TurbonesEx.UnregisterColliderForCollisionFeedback(pointer);
+                }
             }
         }
 
