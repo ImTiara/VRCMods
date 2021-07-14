@@ -54,8 +54,19 @@ namespace ImmersiveTouch
         public static void Turbones_RegisterColliderForCollisionFeedbackDelegate(IntPtr colliderPtr, byte group)
         {
             if (_Turbones == null) return;
-
             _Turbones_RegisterColliderForCollisionFeedbackDelegate.Invoke(null, new object[] { colliderPtr, group });
+        }
+
+        public static void Turbones_UnregisterColliderForCollisionFeedbackDelegate(IntPtr colliderPtr)
+        {
+            if (_Turbones == null) return;
+            _Turbones_UnregisterColliderForCollisionFeedbackDelegate.Invoke(null, new object[] { colliderPtr });
+        }
+
+        public static ulong Turbones_GetAndClearCollidingGroupsMaskDelegate()
+        {
+            if (_Turbones == null) return 0;
+            return (ulong)_Turbones_GetAndClearCollidingGroupsMaskDelegate.Invoke(null, null);
         }
 
         public static void RegisterTurbones()
@@ -65,10 +76,14 @@ namespace ImmersiveTouch
             if (_Turbones == null) return;
 
             _Turbones_RegisterColliderForCollisionFeedbackDelegate = _Turbones.GetType("Turbones.JigglySolverApi").GetMethod("RegisterColliderForCollisionFeedbackDelegate");
+            _Turbones_UnregisterColliderForCollisionFeedbackDelegate = _Turbones.GetType("Turbones.JigglySolverApi").GetMethod("UnregisterColliderForCollisionFeedbackDelegate");
+            _Turbones_GetAndClearCollidingGroupsMaskDelegate = _Turbones.GetType("Turbones.JigglySolverApi").GetMethod("GetAndClearCollidingGroupsMaskDelegate");
         }
 
         private static Assembly _Turbones;
         private static MethodInfo _Turbones_RegisterColliderForCollisionFeedbackDelegate;
+        private static MethodInfo _Turbones_UnregisterColliderForCollisionFeedbackDelegate;
+        private static MethodInfo _Turbones_GetAndClearCollidingGroupsMaskDelegate;
         #endregion
     }
 }
