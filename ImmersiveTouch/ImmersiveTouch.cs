@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using VRC.SDKBase;
+using ImmersiveTouch.Extensions;
 
 [assembly: MelonInfo(typeof(ImmersiveTouch.ImmersiveTouch), "ImmersiveTouch", "1.0.5", "ImTiara", "https://github.com/ImTiara/VRCMods")]
 [assembly: MelonGame("VRChat", "VRChat")]
@@ -23,15 +24,11 @@ namespace ImmersiveTouch
         private static Vector3 m_PreviousLeftWristPosition;
         private static Vector3 m_PreviousRightWristPosition;
 
-        private static IntPtr m_LeftWristIntPtr;
-        private static IntPtr m_RightWristIntPtr;
-
-        [ThreadStatic] static IntPtr m_CurrentDBI;
+        private static readonly Dictionary<ulong, List<IntPtr>> m_RegistratedColliderPointers = new Dictionary<ulong, List<IntPtr>>();
 
         private static readonly List<IntPtr> m_LocalDynamicBonePointers = new List<IntPtr>();
 
-        private static ColliderPrioritization m_ColliderPrioritization = ColliderPrioritization.Wrist;
-        private static string colliderPrioritization = "Wrist";
+        [ThreadStatic] static IntPtr m_CurrentDBI;
 
         private static GameObject m_CurrentAvatarObject;
 
@@ -40,13 +37,13 @@ namespace ImmersiveTouch
 
         public void OnUiManagerInit()
         {
-            Manager.RegisterUIExpansionKit();
-            Manager.RegisterTurbones();
+            TurbonesEx.SetIsPresent();
+
+            MelonLogger.Msg("Using Turbones: " + TurbonesEx.isPresent);
 
             MelonPreferences.CreateCategory(GetType().Name, "Immersive Touch");
             MelonPreferences.CreateEntry(GetType().Name, "Enable", true, "Enable Immersive Touch");
             MelonPreferences.CreateEntry(GetType().Name, "HapticAmplitude", 100.0f, "Haptic Amplitude (%)");
-            MelonPreferences.CreateEntry(GetType().Name, "ColliderPrioritization", colliderPrioritization, "Collider Prioritization");
             MelonPreferences.CreateEntry(GetType().Name, "IgnoreSelf", true, "Ignore Self Collisions");
 
             OnPreferencesSaved();
@@ -54,22 +51,21 @@ namespace ImmersiveTouch
             Hooks.ApplyPatches();
         }
 
+        public override void OnUpdate()
+        {
+            if (!TurbonesEx.isPresent) return;
+
+            switch (TurbonesEx.GetAndClearCollidingGroupsMask())
+            {
+                case 1: SendHaptic(m_RegistratedColliderPointers[1][0]); break;
+                case 2: SendHaptic(m_RegistratedColliderPointers[2][0]); break;
+            }
+        }
+
         public override void OnPreferencesSaved()
         {
             m_Enable = MelonPreferences.GetEntryValue<bool>(GetType().Name, "Enable");
             m_HapticAmplitude = MelonPreferences.GetEntryValue<float>(GetType().Name, "HapticAmplitude") / 100.0f;
-
-            colliderPrioritization = MelonPreferences.GetEntryValue<string>(GetType().Name, "ColliderPrioritization");
-            Manager.UIExpansionKit_RegisterSettingAsStringEnum(GetType().Name, "ColliderPrioritization", new[]
-            {
-                ("Wrist", "Wrist (Any hand collider)"),
-                ("Thumb", "Thumb"),
-                ("Index", "Index Finger"),
-                ("Middle", "Middle Finger"),
-                ("Ring", "Ring Finger"),
-                ("Pinky", "Pinky Finger")
-            });
-            Enum.TryParse(colliderPrioritization, out m_ColliderPrioritization);
 
             m_IgnoreSelf = MelonPreferences.GetEntryValue<bool>(GetType().Name, "IgnoreSelf");
 
@@ -116,7 +112,7 @@ namespace ImmersiveTouch
 
             try
             {
-                if (!m_IsCapable || (!instance.Equals(m_LeftWristIntPtr) && !instance.Equals(m_RightWristIntPtr)))
+                if (!m_IsCapable || (!m_RegistratedColliderPointers[1].Contains(instance) && !m_RegistratedColliderPointers[2].Contains(instance)))
                 {
                     InvokeCollide();
                     return;
@@ -146,14 +142,14 @@ namespace ImmersiveTouch
 
             Vector3 position = dynamicBoneCollider.transform.position;
 
-            if (instance.Equals(m_LeftWristIntPtr) && Vector3.Distance(m_PreviousLeftWristPosition, position) > m_HapticDistance)
+            if (m_RegistratedColliderPointers[1].Contains(instance) && Vector3.Distance(m_PreviousLeftWristPosition, position) > m_HapticDistance)
             {
                 Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
 
                 m_PreviousLeftWristPosition = position;
             }
 
-            if (instance.Equals(m_RightWristIntPtr) && Vector3.Distance(m_PreviousRightWristPosition, position) > m_HapticDistance)
+            if (m_RegistratedColliderPointers[2].Contains(instance) && Vector3.Distance(m_PreviousRightWristPosition, position) > m_HapticDistance)
             {
                 Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
 
@@ -174,50 +170,40 @@ namespace ImmersiveTouch
                 Animator animator = Manager.GetLocalAvatarAnimator();
                 if (animator == null || !animator.isHuman) NotCapable();
 
-                HumanBodyBones leftBoneTarget = HumanBodyBones.LeftHand;
-                HumanBodyBones rightBoneTarget = HumanBodyBones.RightHand;
-
-                switch (m_ColliderPrioritization)
+                if (TurbonesEx.isPresent)
                 {
-                    case ColliderPrioritization.Wrist:
-                        leftBoneTarget = HumanBodyBones.LeftHand;
-                        rightBoneTarget = HumanBodyBones.RightHand;
-                        break;
-                    case ColliderPrioritization.Thumb:
-                        leftBoneTarget = HumanBodyBones.LeftThumbProximal;
-                        rightBoneTarget = HumanBodyBones.RightThumbProximal;
-                        break;
-                    case ColliderPrioritization.Index:
-                        leftBoneTarget = HumanBodyBones.LeftIndexProximal;
-                        rightBoneTarget = HumanBodyBones.RightIndexProximal;
-                        break;
-                    case ColliderPrioritization.Middle:
-                        leftBoneTarget = HumanBodyBones.LeftMiddleProximal;
-                        rightBoneTarget = HumanBodyBones.RightMiddleProximal;
-                        break;
-                    case ColliderPrioritization.Ring:
-                        leftBoneTarget = HumanBodyBones.LeftRingProximal;
-                        rightBoneTarget = HumanBodyBones.RightRingProximal;
-                        break;
-                    case ColliderPrioritization.Pinky:
-                        leftBoneTarget = HumanBodyBones.LeftLittleProximal;
-                        rightBoneTarget = HumanBodyBones.RightLittleProximal;
-                        break;
+                    foreach (var container in m_RegistratedColliderPointers)
+                    {
+                        foreach (var pointer in container.Value)
+                        {
+                            TurbonesEx.UnregisterColliderForCollisionFeedback(pointer);
+                        }
+                    }
                 }
 
-                var leftHandColliders = animator.GetDynamicBoneColliders(leftBoneTarget);
-                var rightHandColliders = animator.GetDynamicBoneColliders(rightBoneTarget);
+                m_RegistratedColliderPointers.Clear();
+                m_RegistratedColliderPointers.Add(1, new List<IntPtr>());
+                m_RegistratedColliderPointers.Add(2, new List<IntPtr>());
 
-                if (m_ColliderPrioritization != ColliderPrioritization.Wrist && (leftHandColliders.Count == 0 || rightHandColliders.Count == 0))
+                foreach (var collider in Manager.GetDynamicBoneColliders(animator, HumanBodyBones.LeftHand))
                 {
-                    leftHandColliders = animator.GetDynamicBoneColliders(HumanBodyBones.LeftHand);
-                    rightHandColliders = animator.GetDynamicBoneColliders(HumanBodyBones.RightHand);
+                    IntPtr pointer = collider.Pointer;
+
+                    m_RegistratedColliderPointers[1].Add(pointer);
+
+                    if (TurbonesEx.isPresent) TurbonesEx.RegisterColliderForCollisionFeedback(pointer, 0);
                 }
 
-                m_LeftWristIntPtr = leftHandColliders.Count != 0 ? leftHandColliders[0].Pointer : IntPtr.Zero;
-                m_RightWristIntPtr = rightHandColliders.Count != 0 ? rightHandColliders[0].Pointer : IntPtr.Zero;
+                foreach (var collider in Manager.GetDynamicBoneColliders(animator, HumanBodyBones.RightHand))
+                {
+                    IntPtr pointer = collider.Pointer;
 
-                m_IsCapable = m_LeftWristIntPtr != IntPtr.Zero && m_RightWristIntPtr != IntPtr.Zero;
+                    m_RegistratedColliderPointers[2].Add(pointer);
+
+                    if (TurbonesEx.isPresent) TurbonesEx.RegisterColliderForCollisionFeedback(pointer, 1);
+                }
+
+                m_IsCapable = m_RegistratedColliderPointers[1].Count != 0 && m_RegistratedColliderPointers[2].Count != 0;
 
                 if (m_IsCapable)
                 {
@@ -225,10 +211,9 @@ namespace ImmersiveTouch
                     foreach (var db in m_CurrentAvatarObject.GetDynamicBones())
                         m_LocalDynamicBonePointers.Add(db.Pointer);
 
-                    MelonLogger.Msg($"Listening for collisions on \"{leftHandColliders[0].gameObject.name}\" and \"{rightHandColliders[0].gameObject.name}\".");
+                    MelonLogger.Msg($"This avatar is OK! Left count: ({m_RegistratedColliderPointers[1].Count}). Right count: ({m_RegistratedColliderPointers[2].Count})");
                 }
-                else
-                    NotCapable();
+                else NotCapable();
             }
             catch (Exception e)
             {
@@ -248,16 +233,6 @@ namespace ImmersiveTouch
         {
             while (VRCUiManager.prop_VRCUiManager_0 == null) yield return null;
             OnUiManagerInit();
-        }
-
-        private enum ColliderPrioritization
-        {
-            Wrist,
-            Thumb,
-            Index,
-            Middle,
-            Ring,
-            Pinky
         }
     }
 }
