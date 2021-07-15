@@ -24,5 +24,16 @@ namespace ImmersiveTouch.Extensions
 
         public static void ClearCollisionFeedbackColliders()
             => Turbones.JigglySolverApi.ClearCollisionFeedbackColliders();
+
+        public static void UnregisterTurbonesColliders()
+        {
+            foreach (var container in ImmersiveTouch.m_RegistratedColliderPointers)
+            {
+                foreach (var pointer in container.Value)
+                {
+                    UnregisterColliderForCollisionFeedback(pointer);
+                }
+            }
+        }
     }
 }
