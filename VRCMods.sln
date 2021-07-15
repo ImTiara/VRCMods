@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31424.327
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImmersiveTouch", "ImmersiveTouch\ImmersiveTouch.csproj", "{65A6C46E-8D55-4477-9EBE-3EB59D34A1CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImmersiveTouch", "ImmersiveTouch\ImmersiveTouch.csproj", "{65A6C46E-8D55-4477-9EBE-3EB59D34A1CA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GestureIndicator", "GestureIndicator\GestureIndicator.csproj", "{5156ADC6-15E3-48AA-99A9-2946AB7596F4}"
 EndProject
