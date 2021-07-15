@@ -15,12 +15,6 @@ namespace ImmersiveTouch
         public static VRCAvatarManager GetLocalAvatarManager()
             => GetLocalVRCPlayer()?.prop_VRCAvatarManager_0;
 
-        public static GameObject GetLocalAvatarObject()
-            => GetLocalAvatarManager()?.prop_GameObject_0;
-
-        public static Animator GetLocalAvatarAnimator()
-            => GetLocalAvatarManager()?.field_Private_Animator_0;
-
         public static Il2CppArrayBase<DynamicBoneCollider> GetDynamicBoneColliders(this Animator animator, HumanBodyBones bone)
             => animator.GetBoneTransform(bone).GetComponentsInChildren<DynamicBoneCollider>(true);
 
