@@ -21,16 +21,21 @@ namespace ImmersiveTouch
         private static float m_HapticAmplitude;
         private static float m_HapticDistance;
 
+        private static Transform m_LeftWrist;
+        private static Transform m_RightWrist;
+
         private static Vector3 m_PreviousLeftWristPosition;
         private static Vector3 m_PreviousRightWristPosition;
 
-        private static readonly Dictionary<ulong, List<IntPtr>> m_RegistratedColliderPointers = new Dictionary<ulong, List<IntPtr>>();
+        public static readonly Dictionary<ulong, List<IntPtr>> m_RegistratedColliderPointers = new Dictionary<ulong, List<IntPtr>>();
 
         private static readonly List<IntPtr> m_LocalDynamicBonePointers = new List<IntPtr>();
 
         [ThreadStatic] static IntPtr m_CurrentDBI;
 
         private static GameObject m_CurrentAvatarObject;
+
+        private static Animator m_CurrentAnimator;
 
         public override void OnApplicationStart()
             => MelonCoroutines.Start(UiManagerInitializer());
@@ -47,17 +52,6 @@ namespace ImmersiveTouch
             OnPreferencesSaved();
 
             Hooks.ApplyPatches();
-        }
-
-        public override void OnUpdate()
-        {
-            if (!TurbonesEx.isPresent) return;
-
-            switch (TurbonesEx.GetAndClearCollidingGroupsMask())
-            {
-                case 1: SendHaptic(m_RegistratedColliderPointers[1][0]); break;
-                case 2: SendHaptic(m_RegistratedColliderPointers[2][0]); break;
-            }
         }
 
         public override void OnPreferencesSaved()
@@ -86,6 +80,7 @@ namespace ImmersiveTouch
                     m_HapticDistance = scale / 785.0f;
 
                     m_CurrentAvatarObject = avatarManager.prop_GameObject_0;
+                    m_CurrentAnimator = animator;
 
                     TryCapability();
                 }
@@ -132,32 +127,43 @@ namespace ImmersiveTouch
             }
         }
 
+        public override void OnUpdate()
+        {
+            if (!TurbonesEx.isPresent) return;
+
+            switch (TurbonesEx.GetAndClearCollidingGroupsMask())
+            {
+                case 1: SendHaptic(m_RegistratedColliderPointers[1][0]); break;
+                case 2: SendHaptic(m_RegistratedColliderPointers[2][0]); break;
+                case 3:
+                    SendHaptic(m_RegistratedColliderPointers[1][0]);
+                    SendHaptic(m_RegistratedColliderPointers[2][0]);
+                    break;
+            }
+        }
+
         private static void SendHaptic(IntPtr instance)
         {
             if (m_IgnoreSelf && m_LocalDynamicBonePointers.Contains(m_CurrentDBI)) return;
 
-            DynamicBoneCollider dynamicBoneCollider = new DynamicBoneCollider(instance);
-
-            Vector3 position = dynamicBoneCollider.transform.position;
-
-            if (m_RegistratedColliderPointers[1].Contains(instance) && Vector3.Distance(m_PreviousLeftWristPosition, position) > m_HapticDistance)
+            if (m_RegistratedColliderPointers[1].Contains(instance) && Vector3.Distance(m_PreviousLeftWristPosition, m_LeftWrist.position) > m_HapticDistance)
             {
                 Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
 
-                m_PreviousLeftWristPosition = position;
+                m_PreviousLeftWristPosition = m_LeftWrist.position;
             }
 
-            if (m_RegistratedColliderPointers[2].Contains(instance) && Vector3.Distance(m_PreviousRightWristPosition, position) > m_HapticDistance)
+            if (m_RegistratedColliderPointers[2].Contains(instance) && Vector3.Distance(m_PreviousRightWristPosition, m_RightWrist.position) > m_HapticDistance)
             {
                 Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
 
-                m_PreviousRightWristPosition = position;
+                m_PreviousRightWristPosition = m_RightWrist.position;
             }
         }
 
         private static void TryCapability()
         {
-            UnregisterTurbonesColliders();
+            if (TurbonesEx.isPresent) TurbonesEx.UnregisterTurbonesColliders();
 
             if (!m_Enable || Manager.GetLocalVRCPlayer() == null)
             {
@@ -167,14 +173,17 @@ namespace ImmersiveTouch
 
             try
             {
-                Animator animator = Manager.GetLocalAvatarAnimator();
-                if (animator == null || !animator.isHuman) NotCapable();
+                if (m_CurrentAnimator == null || !m_CurrentAnimator.isHuman)
+                {
+                    NotCapable();
+                    return;
+                }
 
                 m_RegistratedColliderPointers.Clear();
                 m_RegistratedColliderPointers.Add(1, new List<IntPtr>());
                 m_RegistratedColliderPointers.Add(2, new List<IntPtr>());
 
-                foreach (var collider in Manager.GetDynamicBoneColliders(animator, HumanBodyBones.LeftHand))
+                foreach (var collider in Manager.GetDynamicBoneColliders(m_CurrentAnimator, HumanBodyBones.LeftHand))
                 {
                     IntPtr pointer = collider.Pointer;
 
@@ -183,7 +192,7 @@ namespace ImmersiveTouch
                     if (TurbonesEx.isPresent) TurbonesEx.RegisterColliderForCollisionFeedback(pointer, 0);
                 }
 
-                foreach (var collider in Manager.GetDynamicBoneColliders(animator, HumanBodyBones.RightHand))
+                foreach (var collider in Manager.GetDynamicBoneColliders(m_CurrentAnimator, HumanBodyBones.RightHand))
                 {
                     IntPtr pointer = collider.Pointer;
 
@@ -191,6 +200,9 @@ namespace ImmersiveTouch
 
                     if (TurbonesEx.isPresent) TurbonesEx.RegisterColliderForCollisionFeedback(pointer, 1);
                 }
+
+                m_LeftWrist = m_CurrentAnimator.GetBoneTransform(HumanBodyBones.LeftHand);
+                m_RightWrist = m_CurrentAnimator.GetBoneTransform(HumanBodyBones.RightHand);
 
                 m_IsCapable = m_RegistratedColliderPointers[1].Count != 0 && m_RegistratedColliderPointers[2].Count != 0;
 
@@ -200,7 +212,7 @@ namespace ImmersiveTouch
                     foreach (var db in m_CurrentAvatarObject.GetDynamicBones())
                         m_LocalDynamicBonePointers.Add(db.Pointer);
 
-                    MelonLogger.Msg($"This avatar is OK! Left count: ({m_RegistratedColliderPointers[1].Count}). Right count: ({m_RegistratedColliderPointers[2].Count})");
+                    MelonLogger.Msg($"This avatar is OK! Left count: {m_RegistratedColliderPointers[1].Count}. Right count: {m_RegistratedColliderPointers[2].Count}.");
                 }
                 else NotCapable();
             }
@@ -214,20 +226,6 @@ namespace ImmersiveTouch
             {
                 MelonLogger.Msg("This avatar is not capable for Immersive Touch.");
                 m_IsCapable = false;
-                return;
-            }
-        }
-
-        private static void UnregisterTurbonesColliders()
-        {
-            if (!TurbonesEx.isPresent) return;
-
-            foreach (var container in m_RegistratedColliderPointers)
-            {
-                foreach (var pointer in container.Value)
-                {
-                    TurbonesEx.UnregisterColliderForCollisionFeedback(pointer);
-                }
             }
         }
 
