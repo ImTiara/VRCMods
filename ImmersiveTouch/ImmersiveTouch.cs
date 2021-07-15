@@ -129,7 +129,7 @@ namespace ImmersiveTouch
 
         public override void OnUpdate()
         {
-            if (!TurbonesEx.isPresent) return;
+            if (!TurbonesEx.isPresent || !m_IsCapable) return;
 
             switch (TurbonesEx.GetAndClearCollidingGroupsMask())
             {
