@@ -176,7 +176,7 @@ namespace ImmersiveTouch
                     return;
                 }
 
-                m_HapticDistance = Vector3.Distance(m_CurrentAnimator.GetBoneTransform(HumanBodyBones.LeftHand).position, m_CurrentAnimator.GetBoneTransform(HumanBodyBones.RightHand).position) / 785.0f;
+                m_HapticDistance = Vector3.Distance(m_CurrentAnimator.GetBoneTransform(HumanBodyBones.LeftHand).position, m_CurrentAnimator.GetBoneTransform(HumanBodyBones.RightHand).position) / 500.0f;
 
                 m_RegistratedColliderPointers.Clear();
                 m_RegistratedColliderPointers.Add(1, new List<IntPtr>());
