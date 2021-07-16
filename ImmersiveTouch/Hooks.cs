@@ -1,4 +1,5 @@
-﻿using MelonLoader;
+﻿using HarmonyLib;
+using MelonLoader;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -9,9 +10,7 @@ namespace ImmersiveTouch
 {
     public class Hooks
     {
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void AvatarChangedDelegate(IntPtr instance, IntPtr __0, IntPtr __1);
-        public static AvatarChangedDelegate avatarChangedDelegate;
+        private static readonly HarmonyLib.Harmony _harmonyInstance = new HarmonyLib.Harmony("ImmersiveTouchPatcher");
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void UpdateParticlesDelegate(IntPtr __0, bool __1);
@@ -21,18 +20,14 @@ namespace ImmersiveTouch
         public delegate void CollideDelegate(IntPtr __0, IntPtr __1, float __2);
         public static CollideDelegate collideDelegate;
 
-        public static unsafe void ApplyPatches()
+        public static void ApplyPatches()
         {
-            try
-            {
-                MethodInfo avatarChangedMethod = typeof(VRCAvatarManager).GetMethods().FirstOrDefault(method => method.Name.StartsWith("Method_Private_Boolean_ApiAvatar_GameObject_"));
+            ApplyHooks();
+            ApplyHarmonyHooks();
+        }
 
-                IntPtr original = *(IntPtr*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(avatarChangedMethod).GetValue(null);
-                MelonUtils.NativeHookAttach((IntPtr)(&original), typeof(ImmersiveTouch).GetMethod(nameof(ImmersiveTouch.OnAvatarChanged), BindingFlags.Static | BindingFlags.Public)!.MethodHandle.GetFunctionPointer());
-                avatarChangedDelegate = Marshal.GetDelegateForFunctionPointer<AvatarChangedDelegate>(original);
-            }
-            catch (Exception e) { MelonLogger.Error($"Failed to patch: OnAvatarChanged\n{e}"); }
-
+        public static unsafe void ApplyHooks()
+        {
             try
             {
                 IntPtr original = *(IntPtr*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(typeof(DynamicBone).GetMethod(nameof(DynamicBone.Method_Private_Void_Boolean_0))).GetValue(null);
@@ -48,6 +43,12 @@ namespace ImmersiveTouch
                 collideDelegate = Marshal.GetDelegateForFunctionPointer<CollideDelegate>(original);
             }
             catch (Exception e) { MelonLogger.Error($"Failed to patch: OnCollide\n{e}"); }
+        }
+
+        public static void ApplyHarmonyHooks()
+        {
+            _harmonyInstance.Patch(typeof(VRCAvatarManager).GetMethods().FirstOrDefault(method =>
+                method.Name.StartsWith("Method_Private_Boolean_ApiAvatar_GameObject_")), null, new HarmonyMethod(typeof(ImmersiveTouch).GetMethod("OnAvatarChanged", BindingFlags.Public | BindingFlags.Static)), null);
         }
     }
 }
