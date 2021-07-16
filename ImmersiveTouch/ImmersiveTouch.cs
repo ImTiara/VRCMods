@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 using VRC.SDKBase;
 using ImmersiveTouch.Extensions;
+using VRC.Core;
 
 [assembly: MelonInfo(typeof(ImmersiveTouch.ImmersiveTouch), "ImmersiveTouch", "1.0.5", "ImTiara", "https://github.com/ImTiara/VRCMods")]
 [assembly: MelonGame("VRChat", "VRChat")]
@@ -64,19 +65,14 @@ namespace ImmersiveTouch
             TryCapability();
         }
 
-        public static unsafe void OnAvatarChanged(IntPtr instance, IntPtr __0, IntPtr __1)
+        public static void OnAvatarChanged(VRCAvatarManager __instance, ApiAvatar __0, GameObject __1)
         {
-            Hooks.avatarChangedDelegate(instance, __0, __1);
-
             try
             {
-                // Pointers go brr
-                if (instance != Manager.GetLocalAvatarManager().Pointer) return;
+                if (__instance.GetInstanceID() != Manager.GetLocalAvatarManager().GetInstanceID()) return;
 
-                var avatarManager = Manager.GetLocalAvatarManager();
-
-                m_CurrentAvatarObject = avatarManager.prop_GameObject_0;
-                m_CurrentAnimator = avatarManager.field_Private_Animator_0;
+                m_CurrentAvatarObject = __instance.prop_GameObject_0;
+                m_CurrentAnimator = __instance.field_Private_Animator_0;
 
                 TryCapability();
             }
