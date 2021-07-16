@@ -19,21 +19,13 @@ namespace ImmersiveTouch.Extensions
         public static ulong GetAndClearCollidingGroupsMask()
             => Turbones.JigglySolverApi.GetAndClearCollidingGroupsMask();
 
-        public static void UnregisterColliderForCollisionFeedback(IntPtr colliderPtr)
-            => Turbones.JigglySolverApi.UnregisterColliderForCollisionFeedback(colliderPtr);
-
         public static void ClearCollisionFeedbackColliders()
             => Turbones.JigglySolverApi.ClearCollisionFeedbackColliders();
 
-        public static void UnregisterTurbonesColliders()
-        {
-            foreach (var container in ImmersiveTouch.m_RegistratedColliderPointers)
-            {
-                foreach (var pointer in container.Value)
-                {
-                    UnregisterColliderForCollisionFeedback(pointer);
-                }
-            }
-        }
+        public static void ExcludeBoneFromCollisionFeedback(IntPtr bonePtr)
+            => Turbones.JigglySolverApi.ExcludeBoneFromCollisionFeedback(bonePtr);
+
+        public static void ClearExcludedBonesFromCollisionFeedback()
+            => Turbones.JigglySolverApi.ClearExcludedBonesFromCollisionFeedback();
     }
 }
