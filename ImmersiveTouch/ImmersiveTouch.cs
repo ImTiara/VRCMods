@@ -73,14 +73,8 @@ namespace ImmersiveTouch
                 VRCAvatarManager avatarManager = new VRCAvatarManager(instance);
                 if (avatarManager != null && avatarManager.GetInstanceID().Equals(Manager.GetLocalAvatarManager().GetInstanceID()))
                 {
-                    Animator animator = avatarManager.field_Private_Animator_0;
-                    if (animator == null || !animator.isHuman) return;
-
-                    float scale = Vector3.Distance(animator.GetBoneTransform(HumanBodyBones.LeftHand).position, animator.GetBoneTransform(HumanBodyBones.RightHand).position);
-                    m_HapticDistance = scale / 785.0f;
-
                     m_CurrentAvatarObject = avatarManager.prop_GameObject_0;
-                    m_CurrentAnimator = animator;
+                    m_CurrentAnimator = avatarManager.field_Private_Animator_0;
 
                     TryCapability();
                 }
@@ -163,7 +157,13 @@ namespace ImmersiveTouch
 
         private static void TryCapability()
         {
-            if (TurbonesEx.isPresent) TurbonesEx.UnregisterTurbonesColliders();
+            m_CurrentDBI = IntPtr.Zero;
+
+            if (TurbonesEx.isPresent)
+            {
+                TurbonesEx.ClearCollisionFeedbackColliders();
+                TurbonesEx.ClearExcludedBonesFromCollisionFeedback();
+            }
 
             if (!m_Enable || Manager.GetLocalVRCPlayer() == null)
             {
@@ -178,6 +178,8 @@ namespace ImmersiveTouch
                     NotCapable();
                     return;
                 }
+
+                m_HapticDistance = Vector3.Distance(m_CurrentAnimator.GetBoneTransform(HumanBodyBones.LeftHand).position, m_CurrentAnimator.GetBoneTransform(HumanBodyBones.RightHand).position) / 785.0f;
 
                 m_RegistratedColliderPointers.Clear();
                 m_RegistratedColliderPointers.Add(1, new List<IntPtr>());
@@ -210,7 +212,13 @@ namespace ImmersiveTouch
                 {
                     m_LocalDynamicBonePointers.Clear();
                     foreach (var db in m_CurrentAvatarObject.GetDynamicBones())
-                        m_LocalDynamicBonePointers.Add(db.Pointer);
+                    {
+                        IntPtr pointer = db.Pointer;
+
+                        m_LocalDynamicBonePointers.Add(pointer);
+
+                        if (TurbonesEx.isPresent && m_IgnoreSelf) TurbonesEx.ExcludeBoneFromCollisionFeedback(pointer);
+                    }
 
                     MelonLogger.Msg($"This avatar is OK! Left count: {m_RegistratedColliderPointers[1].Count}. Right count: {m_RegistratedColliderPointers[2].Count}.");
                 }
