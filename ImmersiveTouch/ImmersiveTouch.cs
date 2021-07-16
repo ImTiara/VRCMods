@@ -70,14 +70,15 @@ namespace ImmersiveTouch
 
             try
             {
-                VRCAvatarManager avatarManager = new VRCAvatarManager(instance);
-                if (avatarManager != null && avatarManager.GetInstanceID().Equals(Manager.GetLocalAvatarManager().GetInstanceID()))
-                {
-                    m_CurrentAvatarObject = avatarManager.prop_GameObject_0;
-                    m_CurrentAnimator = avatarManager.field_Private_Animator_0;
+                // Pointers go brr
+                if (instance != Manager.GetLocalAvatarManager().Pointer) return;
 
-                    TryCapability();
-                }
+                var avatarManager = Manager.GetLocalAvatarManager();
+
+                m_CurrentAvatarObject = avatarManager.prop_GameObject_0;
+                m_CurrentAnimator = avatarManager.field_Private_Animator_0;
+
+                TryCapability();
             }
             catch (Exception e)
             {
