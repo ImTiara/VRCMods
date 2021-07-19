@@ -122,15 +122,10 @@ namespace ImmersiveTouch
         {
             if (!TurbonesEx.isPresent || !m_IsCapable) return;
 
-            switch (TurbonesEx.GetAndClearCollidingGroupsMask())
-            {
-                case 1: SendHaptic(m_RegistratedColliderPointers[1][0]); break;
-                case 2: SendHaptic(m_RegistratedColliderPointers[2][0]); break;
-                case 3:
-                    SendHaptic(m_RegistratedColliderPointers[1][0]);
-                    SendHaptic(m_RegistratedColliderPointers[2][0]);
-                    break;
-            }
+            ulong mask = TurbonesEx.GetAndClearCollidingGroupsMask();
+
+            if ((mask & 1) != 0) SendHaptic(m_RegistratedColliderPointers[1][0]);
+            if ((mask & 2) != 0) SendHaptic(m_RegistratedColliderPointers[2][0]);
         }
 
         private static void SendHaptic(IntPtr instance)
