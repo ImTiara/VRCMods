@@ -31,7 +31,7 @@ namespace ImmersiveTouch
         private static Vector3 previousLeftWristPosition;
         private static Vector3 previousRightWristPosition;
 
-        public static readonly Dictionary<ulong, List<IntPtr>> registratedColliderPtrs = new Dictionary<ulong, List<IntPtr>>();
+        public static readonly Dictionary<int, List<IntPtr>> registratedColliderPtrs = new Dictionary<int, List<IntPtr>>();
 
         private static readonly List<IntPtr> localDynamicBonePtrs = new List<IntPtr>();
         [ThreadStatic] static IntPtr currentDBI;
