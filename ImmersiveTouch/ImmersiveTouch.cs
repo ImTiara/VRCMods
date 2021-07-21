@@ -68,7 +68,7 @@ namespace ImmersiveTouch
             TryCapability();
         }
 
-        public static void OnAvatarChanged(VRCAvatarManager __instance, ApiAvatar __0, GameObject __1)
+        public static void OnAvatarChanged(VRCAvatarManager __instance)
         {
             try
             {
