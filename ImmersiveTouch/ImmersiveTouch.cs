@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 using VRC.SDKBase;
 using ImmersiveTouch.Extensions;
-using VRC.Core;
 
 [assembly: MelonInfo(typeof(ImmersiveTouch.ImmersiveTouch), "ImmersiveTouch", "1.0.6", "ImTiara", "https://github.com/ImTiara/VRCMods")]
 [assembly: MelonGame("VRChat", "VRChat")]
