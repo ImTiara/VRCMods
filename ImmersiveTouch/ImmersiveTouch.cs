@@ -216,7 +216,7 @@ namespace ImmersiveTouch
                         if (TurbonesEx.isPresent && m_IgnoreSelf) TurbonesEx.ExcludeBoneFromCollisionFeedback(pointer);
                     }
 
-                    MelonLogger.Msg($"This avatar is OK! Left count: {registratedColliderPtrs[1].Count}. Right count: {registratedColliderPtrs[2].Count}.");
+                    MelonLogger.Msg($"This avatar is OK! Left collider count: {registratedColliderPtrs[1].Count}. Right collider count: {registratedColliderPtrs[2].Count}.");
                 }
                 else NotCapable();
             }
