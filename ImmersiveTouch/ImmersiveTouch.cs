@@ -32,7 +32,7 @@ namespace ImmersiveTouch
 
         public static readonly Dictionary<int, List<IntPtr>> registratedColliderPtrs = new Dictionary<int, List<IntPtr>>();
 
-        private static readonly List<IntPtr> localDynamicBonePtrs = new List<IntPtr>();
+        public static readonly List<IntPtr> localDynamicBonePtrs = new List<IntPtr>();
         [ThreadStatic] static IntPtr currentDBI;
 
         private static GameObject currentAvatarObject;
@@ -156,8 +156,8 @@ namespace ImmersiveTouch
 
             if (TurbonesEx.isPresent)
             {
-                TurbonesEx.ClearCollisionFeedbackColliders();
-                TurbonesEx.ClearExcludedBonesFromCollisionFeedback();
+                TurbonesEx.UnregisterCollisionFeedbackColliders();
+                TurbonesEx.UnregisterExcludedBonesFromCollisionFeedback();
             }
 
             if (!m_Enable || Manager.GetLocalVRCPlayer() == null)
