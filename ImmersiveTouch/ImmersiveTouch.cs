@@ -75,7 +75,7 @@ namespace ImmersiveTouch
 
                 currentAvatarObject = __instance.prop_GameObject_0;
                 currentAnimator = __instance.field_Private_Animator_0;
-                currentViewHeight = __instance.prop_VRC_AvatarDescriptor_0.ViewPosition.y;
+                currentViewHeight = __instance.field_Private_VRC_AvatarDescriptor_0.ViewPosition.y;
 
                 TryCapability();
             }
