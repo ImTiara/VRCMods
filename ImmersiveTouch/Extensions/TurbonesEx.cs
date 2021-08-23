@@ -45,20 +45,20 @@ namespace ImmersiveTouch.Extensions
 
         public static void UnregisterCollisionFeedbackColliders()
         {
-            foreach (var container in ImmersiveTouch.registratedColliderPtrs)
+            foreach (var container in ImmersiveTouch.registratedColliders)
             {
-                foreach (var ptr in container.Value)
+                foreach (var collider in container.Value)
                 {
-                    UnregisterColliderForCollisionFeedback(ptr);
+                    UnregisterColliderForCollisionFeedback(collider.Pointer);
                 }
             }
         }
 
         public static void UnregisterExcludedBonesFromCollisionFeedback()
         {
-            foreach (var ptr in ImmersiveTouch.localDynamicBonePtrs)
+            foreach (var bone in ImmersiveTouch.localDynamicBones)
             {
-                UnExcludeBoneFromCollisionFeedback(ptr);
+                UnExcludeBoneFromCollisionFeedback(bone.Pointer);
             }
         }
     }

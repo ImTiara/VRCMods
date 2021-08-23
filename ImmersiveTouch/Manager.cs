@@ -1,4 +1,6 @@
-﻿using UnhollowerBaseLib;
+﻿using System;
+using System.Collections.Generic;
+using UnhollowerBaseLib;
 using UnityEngine;
 using VRC.SDKBase;
 
@@ -20,5 +22,19 @@ namespace ImmersiveTouch
 
         public static Il2CppArrayBase<DynamicBone> GetDynamicBones(this GameObject gameObject)
             => gameObject.GetComponentsInChildren<DynamicBone>(true);
+
+        public static bool HasPointer(this List<DynamicBoneCollider> colliders, IntPtr pointer)
+        {
+            foreach (var collider in colliders)
+                if (collider.Pointer == pointer) return true;
+            return false;
+        }
+
+        public static bool HasPointer(this List<DynamicBone> bones, IntPtr pointer)
+        {
+            foreach (var collider in bones)
+                if (collider.Pointer == pointer) return true;
+            return false;
+        }
     }
 }
