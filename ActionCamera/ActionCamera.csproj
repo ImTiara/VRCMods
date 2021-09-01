@@ -16,11 +16,29 @@
       <Reference Include="Assembly-CSharp">
         <HintPath>..\..\..\MelonLoader\Managed\Assembly-CSharp.dll</HintPath>
       </Reference>
+      <Reference Include="Il2Cppmscorlib">
+        <HintPath>..\..\..\MelonLoader\Managed\Il2Cppmscorlib.dll</HintPath>
+      </Reference>
       <Reference Include="MelonLoader">
         <HintPath>..\..\..\MelonLoader\MelonLoader.dll</HintPath>
       </Reference>
+      <Reference Include="UnhollowerBaseLib">
+        <HintPath>..\..\..\MelonLoader\Managed\UnhollowerBaseLib.dll</HintPath>
+      </Reference>
       <Reference Include="UnityEngine.CoreModule">
         <HintPath>..\..\..\MelonLoader\Managed\UnityEngine.CoreModule.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.UI">
+        <HintPath>..\..\..\MelonLoader\Managed\UnityEngine.UI.dll</HintPath>
+      </Reference>
+      <Reference Include="VRCSDK2">
+        <HintPath>..\..\..\MelonLoader\Managed\VRCSDK2.dll</HintPath>
+      </Reference>
+      <Reference Include="VRCSDK3">
+        <HintPath>..\..\..\MelonLoader\Managed\VRCSDK3.dll</HintPath>
+      </Reference>
+      <Reference Include="VRCSDKBase">
+        <HintPath>..\..\..\MelonLoader\Managed\VRCSDKBase.dll</HintPath>
       </Reference>
     </ItemGroup>
 </Project>

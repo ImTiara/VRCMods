@@ -1,6 +1,6 @@
 ﻿using MelonLoader;
 using System.Collections;
-using ActionCamera.Extensions;
+using ActionMenuApi.Api;
 
 [assembly: MelonInfo(typeof(ActionCamera.ActionCamera), "ActionCamera", "1.0.0", "ImTiara", "https://github.com/ImTiara/VRCMods")]
 [assembly: MelonGame("VRChat", "VRChat")]
@@ -14,39 +14,34 @@ namespace ActionCamera
 
         private void OnUiManagerInit()
         {
-            ActionMenuApiEx.SetIsPresent();
+            MelonPreferences.CreateCategory(GetType().Name, "Action Camera");
+            MelonPreferences.CreateEntry(GetType().Name, "OptionsMenu", false, "Use Options Menu (requires restart)");
 
-            if (!ActionMenuApiEx.isPresent)
+            VRCActionMenuPage.AddSubMenu(MelonPreferences.GetEntryValue<bool>(GetType().Name, "OptionsMenu") ? ActionMenuPage.Options : ActionMenuPage.Main, "Camera", () =>
             {
-                MelonLogger.Error("Missing ActionMenuApi");
-                return;
-            }
-
-            ActionMenuApiEx.AddSubMenu(ActionMenuApi.Api.ActionMenuPage.Main, "Camera", () =>
-            {
-                ActionMenuApiEx.AddButton("Take Picture", () =>
+                CustomSubMenu.AddButton("Spawn Camera", () =>
                 {
-                    
+                    Manager.EnableCamera();
                 });
 
-                ActionMenuApiEx.AddButton("Timed Picture (5 seconds)", () =>
+                CustomSubMenu.AddButton("Timed Picture (5 seconds)", () =>
                 {
-
+                    Manager.TakeTimedPicture();
                 });
 
-                ActionMenuApiEx.AddButton("Timed Picture (10 seconds)", () =>
+                CustomSubMenu.AddButton("Take Picture", () =>
                 {
-
+                    Manager.TakePicture();
                 });
 
-                ActionMenuApiEx.AddButton("Remove Camera", () =>
+                CustomSubMenu.AddButton("Timed Picture (10 seconds)", () =>
                 {
-
+                    MelonCoroutines.Start(Manager.TakeCustomTimedPicture(10.0f));
                 });
 
-                ActionMenuApiEx.AddButton("Spawn Camera", () =>
+                CustomSubMenu.AddButton("Remove Camera", () =>
                 {
-
+                    Manager.DisableCamera();
                 });
             });
         }
