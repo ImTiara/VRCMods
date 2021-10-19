@@ -1,10 +1,10 @@
 ﻿using MelonLoader;
 using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(GestureIndicator.GestureIndicator), "GestureIndicator", "1.0.4", "ImTiara", "https://github.com/ImTiara/VRCMods")]
+[assembly: MelonInfo(typeof(GestureIndicator.GestureIndicator), "GestureIndicator", "1.0.5", "ImTiara", "https://github.com/ImTiara/VRCMods")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace GestureIndicator
@@ -16,8 +16,8 @@ namespace GestureIndicator
         private Color m_RightTextColor = Color.cyan;
         private float m_TextOpacity;
 
-        private Text m_LeftGestureText;
-        private Text m_RightGestureText;
+        private TextMeshProUGUI m_LeftGestureText;
+        private TextMeshProUGUI m_RightGestureText;
 
         public override void OnApplicationStart()
             => MelonCoroutines.Start(UiManagerInitializer());
@@ -124,22 +124,29 @@ namespace GestureIndicator
         private void CreateIndicators()
         {
             Transform hud = Manager.GetVRCUiManager().transform.Find("UnscaledUI/HudContent");
+            GameObject textTemplate = Manager.GetQuickMenu().transform.Find("Container/Window/QMNotificationsArea/DebugInfoPanel/Panel/Text_FPS").gameObject;
 
-            m_LeftGestureText = UnityEngine.Object.Instantiate(Manager.GetQuickMenu().transform.Find("QuickMenu_NewElements/_InfoBar/EarlyAccessText").gameObject, hud, true).GetComponent<Text>();
+            m_LeftGestureText = UnityEngine.Object.Instantiate(textTemplate, hud, true).GetComponent<TextMeshProUGUI>();
+            UnityEngine.Object.Destroy(m_LeftGestureText.GetComponent<TextBinding>());
+            m_LeftGestureText.name = "GestureIndicator(Left)";
             RectTransform rectTransformLeft = m_LeftGestureText.GetComponent<RectTransform>();
-            rectTransformLeft.anchoredPosition = new Vector3(290, -924, 0);
-            rectTransformLeft.localScale = new Vector2(0.4f, 0.4f);
+            rectTransformLeft.anchoredPosition = new Vector3(-300f, -415f, 0);
+            rectTransformLeft.localScale = new Vector2(1.0f, 1.0f);
+            rectTransformLeft.sizeDelta = new Vector2(200f, -946f);
             m_LeftGestureText.text = "";
-            m_LeftGestureText.alignment = TextAnchor.MiddleLeft;
-            m_LeftGestureText.fontStyle = FontStyle.Normal;
+            m_LeftGestureText.alignment = TextAlignmentOptions.MidlineLeft;
+            m_LeftGestureText.fontStyle = FontStyles.Normal;
 
-            m_RightGestureText = UnityEngine.Object.Instantiate(Manager.GetQuickMenu().transform.Find("QuickMenu_NewElements/_InfoBar/EarlyAccessText").gameObject, hud, true).GetComponent<Text>();
+            m_RightGestureText = UnityEngine.Object.Instantiate(textTemplate, hud, true).GetComponent<TextMeshProUGUI>();
+            UnityEngine.Object.Destroy(m_RightGestureText.GetComponent<TextBinding>());
+            m_RightGestureText.name = "GestureIndicator(Right)";
             RectTransform rectTransformRight = m_RightGestureText.GetComponent<RectTransform>();
-            rectTransformRight.anchoredPosition = new Vector3(780, -924, 0);
-            rectTransformRight.localScale = new Vector2(0.4f, 0.4f);
+            rectTransformRight.anchoredPosition = new Vector3(150f, -415f, 0);
+            rectTransformRight.localScale = new Vector2(1.0f, 1.0f);
+            rectTransformRight.sizeDelta = new Vector2(200f, -946f);
             m_RightGestureText.text = "";
-            m_RightGestureText.alignment = TextAnchor.MiddleRight;
-            m_RightGestureText.fontStyle = FontStyle.Normal;
+            m_RightGestureText.alignment = TextAlignmentOptions.MidlineRight;
+            m_RightGestureText.fontStyle = FontStyles.Normal;
 
             ApplyTextColors();
         }

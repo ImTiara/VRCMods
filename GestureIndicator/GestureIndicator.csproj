@@ -1,10 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net472</TargetFramework>
-        <VrcReferences>true</VrcReferences>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>8.0</LangVersion>
-        <Version>1.0.4</Version>
+        <Version>1.0.5</Version>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
       <OutputPath>..\Output\</OutputPath>
@@ -12,6 +11,9 @@
     <ItemGroup>
       <Reference Include="Assembly-CSharp">
         <HintPath>..\..\..\MelonLoader\Managed\Assembly-CSharp.dll</HintPath>
+      </Reference>
+      <Reference Include="DataModel">
+        <HintPath>..\..\..\MelonLoader\Managed\DataModel.dll</HintPath>
       </Reference>
       <Reference Include="Il2Cppmscorlib">
         <HintPath>..\..\..\MelonLoader\Managed\Il2Cppmscorlib.dll</HintPath>
@@ -21,6 +23,9 @@
       </Reference>
       <Reference Include="UnhollowerBaseLib">
         <HintPath>..\..\..\MelonLoader\Managed\UnhollowerBaseLib.dll</HintPath>
+      </Reference>
+      <Reference Include="Unity.TextMeshPro">
+        <HintPath>..\..\..\MelonLoader\Managed\Unity.TextMeshPro.dll</HintPath>
       </Reference>
       <Reference Include="UnityEngine.AnimationModule">
         <HintPath>..\..\..\MelonLoader\Managed\UnityEngine.AnimationModule.dll</HintPath>
@@ -33,6 +38,12 @@
       </Reference>
       <Reference Include="UnityEngine.UI">
         <HintPath>..\..\..\MelonLoader\Managed\UnityEngine.UI.dll</HintPath>
+      </Reference>
+      <Reference Include="VRC.UI.Core">
+        <HintPath>..\..\..\MelonLoader\Managed\VRC.UI.Core.dll</HintPath>
+      </Reference>
+      <Reference Include="VRC.UI.Elements">
+        <HintPath>..\..\..\MelonLoader\Managed\VRC.UI.Elements.dll</HintPath>
       </Reference>
       <Reference Include="VRCSDKBase">
         <HintPath>..\..\..\MelonLoader\Managed\VRCSDKBase.dll</HintPath>

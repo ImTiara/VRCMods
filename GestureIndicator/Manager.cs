@@ -6,7 +6,6 @@ namespace GestureIndicator
     {
         private static HandGestureController _getHandGestureController;
         private static VRCUiManager _getVRCUiManager;
-        private static QuickMenu _getQuickMenu;
 
         public static Color HexToColor(string hex)
         {
@@ -66,11 +65,9 @@ namespace GestureIndicator
             return _getVRCUiManager;
         }
 
-        public static QuickMenu GetQuickMenu()
-        {
-            if (_getQuickMenu == null) _getQuickMenu = QuickMenu.prop_QuickMenu_0;
-            return _getQuickMenu;
-        }
+        private static VRC.UI.Elements.QuickMenu _QuickMenu;
+        public static VRC.UI.Elements.QuickMenu GetQuickMenu()
+            => _QuickMenu ??= Resources.FindObjectsOfTypeAll<VRC.UI.Elements.QuickMenu>()[0];
 
         public static VRCPlayer GetLocalVRCPlayer() => VRCPlayer.field_Internal_Static_VRCPlayer_0;
 
