@@ -7,13 +7,15 @@ using UnityEngine;
 using VRC.SDKBase;
 using ImmersiveTouch.Extensions;
 
-[assembly: MelonInfo(typeof(ImmersiveTouch.ImmersiveTouch), "ImmersiveTouch", "1.0.9", "ImTiara", "https://github.com/ImTiara/VRCMods")]
+[assembly: MelonInfo(typeof(ImmersiveTouch.ImmersiveTouch), "ImmersiveTouch", "1.1.0", "ImTiara", "https://github.com/ImTiara/VRCMods")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace ImmersiveTouch
 {
     public class ImmersiveTouch : MelonMod
     {
+        public static HarmonyLib.Harmony harmony;
+
         private static bool m_Enable;
         private static bool m_IgnoreSelf;
 
@@ -41,7 +43,11 @@ namespace ImmersiveTouch
         private static float currentViewHeight;
 
         public override void OnApplicationStart()
-            => MelonCoroutines.Start(UiManagerInitializer());
+        {
+            harmony = HarmonyInstance;
+
+            MelonCoroutines.Start(UiManagerInitializer());
+        }
 
         public void OnUiManagerInit()
         {

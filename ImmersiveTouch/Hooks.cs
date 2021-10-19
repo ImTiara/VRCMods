@@ -10,8 +10,6 @@ namespace ImmersiveTouch
 {
     public class Hooks
     {
-        private static readonly HarmonyLib.Harmony _harmonyInstance = new HarmonyLib.Harmony("ImmersiveTouchPatcher");
-
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void UpdateParticlesDelegate(IntPtr __0, bool __1);
         public static UpdateParticlesDelegate updateParticlesDelegate;
@@ -47,7 +45,7 @@ namespace ImmersiveTouch
 
         public static void ApplyHarmonyHooks()
         {
-            _harmonyInstance.Patch(typeof(VRCAvatarManager).GetMethods().FirstOrDefault(method =>
+            ImmersiveTouch.harmony.Patch(typeof(VRCAvatarManager).GetMethods().FirstOrDefault(method =>
                 method.Name.StartsWith("Method_Private_Boolean_ApiAvatar_GameObject_") && !method.Name.Contains("_PDM_")), null, new HarmonyMethod(typeof(ImmersiveTouch).GetMethod("OnAvatarChanged", BindingFlags.Public | BindingFlags.Static)), null);
         }
     }
