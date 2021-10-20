@@ -12,14 +12,10 @@ namespace NoPerformanceStats
 {
     public class NoPerformanceStats : MelonMod
     {
-        private static HarmonyLib.Harmony harmony;
-
         private static bool allowPerformanceScanner;
 
         public override void OnApplicationStart()
         {
-            harmony = HarmonyInstance;
-
             MelonPreferences.CreateCategory(GetType().Name, "No Performance Stats");
             MelonPreferences.CreateEntry(GetType().Name, "DisablePerformanceStats", true, "Disable Performance Stats");
 
@@ -59,8 +55,8 @@ namespace NoPerformanceStats
         private static bool CalculatePerformance()
             => allowPerformanceScanner;
 
-        private static void Patch(Type targetClass, string target, Type detourClass, string detour, BindingFlags targetBindingFlags = BindingFlags.Public | BindingFlags.Instance, BindingFlags detourBindingFlags = BindingFlags.NonPublic | BindingFlags.Static)
-            => harmony.Patch(targetClass.GetMethod(target, targetBindingFlags), new HarmonyMethod(detourClass.GetMethod(detour, detourBindingFlags)), null, null);
+        private void Patch(Type targetClass, string target, Type detourClass, string detour, BindingFlags targetBindingFlags = BindingFlags.Public | BindingFlags.Instance, BindingFlags detourBindingFlags = BindingFlags.NonPublic | BindingFlags.Static)
+            => HarmonyInstance.Patch(targetClass.GetMethod(target, targetBindingFlags), new HarmonyMethod(detourClass.GetMethod(detour, detourBindingFlags)), null, null);
 
         private IEnumerator UiManagerInitializer()
         {
