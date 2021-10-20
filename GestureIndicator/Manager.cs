@@ -4,66 +4,41 @@ namespace GestureIndicator
 {
     public class Manager
     {
-        private static HandGestureController _getHandGestureController;
-        private static VRCUiManager _getVRCUiManager;
-
         public static Color HexToColor(string hex)
         {
             hex = !hex.StartsWith("#") ? "#" + hex : hex;
-
             ColorUtility.TryParseHtmlString(hex, out Color c);
-
             return c;
         }
 
         public static Gesture GetGesture(Hand hand)
         {
-            Gesture gesture = Gesture.Normal;
-
             HandGestureController handGestureController = GetHandGestureController();
-            if (handGestureController == null) return gesture;
+            if (handGestureController == null) return Gesture.Normal;
 
             switch (hand == Hand.Left ? handGestureController.field_Private_EnumNPrivateSealedva9vUnique_0 : handGestureController.field_Private_EnumNPrivateSealedva9vUnique_2)
             {
-                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue1:
-                    gesture = Gesture.Fist;
-                    break;
-                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue2:
-                    gesture = Gesture.Open;
-                    break;
-                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue3:
-                    gesture = Gesture.Point;
-                    break;
-                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue4:
-                    gesture = Gesture.Victory;
-                    break;
-                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue5:
-                    gesture = Gesture.RockNRoll;
-                    break;
-                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue6:
-                    gesture = Gesture.Gun;
-                    break;
-                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue7:
-                    gesture = Gesture.ThumbsUp;
-                    break;
+                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue1: return Gesture.Fist;
+                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue2: return Gesture.Open;
+                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue3: return Gesture.Point;
+                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue4: return Gesture.Victory;
+                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue5: return Gesture.RockNRoll;
+                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue6: return Gesture.Gun;
+                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue7: return Gesture.ThumbsUp;
             }
-            return gesture;
+            return Gesture.Normal;
         }
 
+        private static HandGestureController _GetHandGestureController;
         public static HandGestureController GetHandGestureController()
         {
-            VRCPlayer p = GetLocalVRCPlayer();
-            if (p == null) return null;
-
-            if (_getHandGestureController == null) _getHandGestureController = p.field_Private_VRC_AnimationController_0.field_Private_HandGestureController_0;
-            return _getHandGestureController;
+            if (_GetHandGestureController == null) _GetHandGestureController = GetLocalVRCPlayer()?.field_Private_VRC_AnimationController_0.field_Private_HandGestureController_0;
+            return _GetHandGestureController;
         }
 
         public static VRCUiManager GetVRCUiManager()
-        {
-            if (_getVRCUiManager == null) _getVRCUiManager = VRCUiManager.prop_VRCUiManager_0;
-            return _getVRCUiManager;
-        }
+            => VRCUiManager.prop_VRCUiManager_0;
+        
 
         private static VRC.UI.Elements.QuickMenu _QuickMenu;
         public static VRC.UI.Elements.QuickMenu GetQuickMenu()

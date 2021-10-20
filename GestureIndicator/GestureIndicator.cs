@@ -59,27 +59,13 @@ namespace GestureIndicator
                             Manager.Gesture leftGesture = Manager.GetGesture(Manager.Hand.Left);
                             switch (leftGesture)
                             {
-                                case Manager.Gesture.Fist:
-                                    m_LeftGestureText.text = "Fist";
-                                    break;
-                                case Manager.Gesture.Open:
-                                    m_LeftGestureText.text = "Hand Open";
-                                    break;
-                                case Manager.Gesture.Point:
-                                    m_LeftGestureText.text = "Point";
-                                    break;
-                                case Manager.Gesture.Victory:
-                                    m_LeftGestureText.text = "Victory";
-                                    break;
-                                case Manager.Gesture.RockNRoll:
-                                    m_LeftGestureText.text = "RockNRoll";
-                                    break;
-                                case Manager.Gesture.Gun:
-                                    m_LeftGestureText.text = "Hand Gun";
-                                    break;
-                                case Manager.Gesture.ThumbsUp:
-                                    m_LeftGestureText.text = "Thumbs Up";
-                                    break;
+                                case Manager.Gesture.Fist: m_LeftGestureText.text = "Fist"; break;
+                                case Manager.Gesture.Open: m_LeftGestureText.text = "Hand Open"; break;
+                                case Manager.Gesture.Point: m_LeftGestureText.text = "Point"; break;
+                                case Manager.Gesture.Victory: m_LeftGestureText.text = "Victory"; break;
+                                case Manager.Gesture.RockNRoll: m_LeftGestureText.text = "RockNRoll"; break;
+                                case Manager.Gesture.Gun: m_LeftGestureText.text = "Hand Gun"; break;
+                                case Manager.Gesture.ThumbsUp: m_LeftGestureText.text = "Thumbs Up"; break;
                             }
                         }
                         else m_LeftGestureText.text = "";
@@ -89,27 +75,13 @@ namespace GestureIndicator
                             Manager.Gesture rightGesture = Manager.GetGesture(Manager.Hand.Right);
                             switch (rightGesture)
                             {
-                                case Manager.Gesture.Fist:
-                                    m_RightGestureText.text = "Fist";
-                                    break;
-                                case Manager.Gesture.Open:
-                                    m_RightGestureText.text = "Hand Open";
-                                    break;
-                                case Manager.Gesture.Point:
-                                    m_RightGestureText.text = "Point";
-                                    break;
-                                case Manager.Gesture.Victory:
-                                    m_RightGestureText.text = "Victory";
-                                    break;
-                                case Manager.Gesture.RockNRoll:
-                                    m_RightGestureText.text = "RockNRoll";
-                                    break;
-                                case Manager.Gesture.Gun:
-                                    m_RightGestureText.text = "Hand Gun";
-                                    break;
-                                case Manager.Gesture.ThumbsUp:
-                                    m_RightGestureText.text = "Thumbs Up";
-                                    break;
+                                case Manager.Gesture.Fist: m_RightGestureText.text = "Fist"; break;
+                                case Manager.Gesture.Open: m_RightGestureText.text = "Hand Open"; break;
+                                case Manager.Gesture.Point: m_RightGestureText.text = "Point"; break;
+                                case Manager.Gesture.Victory: m_RightGestureText.text = "Victory"; break;
+                                case Manager.Gesture.RockNRoll: m_RightGestureText.text = "RockNRoll"; break;
+                                case Manager.Gesture.Gun: m_RightGestureText.text = "Hand Gun"; break;
+                                case Manager.Gesture.ThumbsUp: m_RightGestureText.text = "Thumbs Up"; break;
                             }
                         }
                         else m_RightGestureText.text = "";
