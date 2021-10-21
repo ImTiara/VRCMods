@@ -15,6 +15,8 @@ namespace GestureIndicator
         private Color m_LeftTextColor = Color.cyan;
         private Color m_RightTextColor = Color.cyan;
         private float m_TextOpacity;
+        private float m_X_Position;
+        private float m_Y_Position;
 
         private TextMeshProUGUI m_LeftGestureText;
         private TextMeshProUGUI m_RightGestureText;
@@ -29,6 +31,8 @@ namespace GestureIndicator
             MelonPreferences.CreateEntry(GetType().Name, "TextOpacity", 85f, "Text Opacity (%)");
             MelonPreferences.CreateEntry(GetType().Name, "LeftTextColor", "#00FFFF", "Left Text Color");
             MelonPreferences.CreateEntry(GetType().Name, "RightTextColor", "#00FFFF", "Right Text Color");
+            MelonPreferences.CreateEntry(GetType().Name, "TextXPosition", 1.0f, "Text X Position");
+            MelonPreferences.CreateEntry(GetType().Name, "TextYPosition", 1.0f, "Text Y Position");
 
             CreateIndicators();
 
@@ -41,9 +45,12 @@ namespace GestureIndicator
             m_TextOpacity = MelonPreferences.GetEntryValue<float>(GetType().Name, "TextOpacity");
             m_LeftTextColor = Manager.HexToColor(MelonPreferences.GetEntryValue<string>(GetType().Name, "LeftTextColor"));
             m_RightTextColor = Manager.HexToColor(MelonPreferences.GetEntryValue<string>(GetType().Name, "RightTextColor"));
+            m_X_Position = MelonPreferences.GetEntryValue<float>(GetType().Name, "TextXPosition");
+            m_Y_Position = MelonPreferences.GetEntryValue<float>(GetType().Name, "TextYPosition");
 
             ToggleIndicators(m_Enable);
             ApplyTextColors();
+            ApplyTextPositions();
         }
 
         private IEnumerator CheckGesture()
@@ -100,7 +107,6 @@ namespace GestureIndicator
             UnityEngine.Object.Destroy(m_LeftGestureText.GetComponent<TextBinding>());
             m_LeftGestureText.name = "GestureIndicator(Left)";
             RectTransform rectTransformLeft = m_LeftGestureText.GetComponent<RectTransform>();
-            rectTransformLeft.anchoredPosition = new Vector3(-300f, -415f, 0);
             rectTransformLeft.localScale = new Vector2(1.0f, 1.0f);
             rectTransformLeft.sizeDelta = new Vector2(200f, -946f);
             m_LeftGestureText.text = "";
@@ -110,29 +116,32 @@ namespace GestureIndicator
             UnityEngine.Object.Destroy(m_RightGestureText.GetComponent<TextBinding>());
             m_RightGestureText.name = "GestureIndicator(Right)";
             RectTransform rectTransformRight = m_RightGestureText.GetComponent<RectTransform>();
-            rectTransformRight.anchoredPosition = new Vector3(150f, -415f, 0);
             rectTransformRight.localScale = new Vector2(1.0f, 1.0f);
             rectTransformRight.sizeDelta = new Vector2(200f, -946f);
             m_RightGestureText.text = "";
             m_RightGestureText.alignment = TextAlignmentOptions.MidlineRight;
 
             ApplyTextColors();
+            ApplyTextPositions();
         }
 
         private void ApplyTextColors()
         {
-            if (m_LeftGestureText != null && m_RightGestureText != null)
-            {
-                float op = m_TextOpacity / 100.0f;
+            float op = m_TextOpacity / 100.0f;
 
-                Color colorL = m_LeftTextColor;
-                colorL.a = op;
-                m_LeftGestureText.color = colorL;
+            Color colorL = m_LeftTextColor;
+            colorL.a = op;
+            m_LeftGestureText.color = colorL;
 
-                Color colorR = m_RightTextColor;
-                colorR.a = op;
-                m_RightGestureText.color = colorR;
-            }
+            Color colorR = m_RightTextColor;
+            colorR.a = op;
+            m_RightGestureText.color = colorR;
+        }
+
+        private void ApplyTextPositions()
+        {
+            m_LeftGestureText.GetComponent<RectTransform>().anchoredPosition = new Vector2((-200f * m_X_Position) - 102.5f, -415f * m_Y_Position);
+            m_RightGestureText.GetComponent<RectTransform>().anchoredPosition = new Vector2((200f * m_X_Position) - 102.5f, -415f * m_Y_Position);
         }
 
         private void ToggleIndicators(bool enable)
