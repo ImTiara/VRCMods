@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GestureIndicator", "Gesture
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoPerformanceStats", "NoPerformanceStats\NoPerformanceStats.csproj", "{4690B2A2-9C70-4877-A6AE-73D2E25FCD02}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ActionCamera", "ActionCamera\ActionCamera.csproj", "{6C35CC63-A0C1-4DB7-ABB0-494CA366FC8A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
