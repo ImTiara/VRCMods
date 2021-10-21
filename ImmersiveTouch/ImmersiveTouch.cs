@@ -179,7 +179,7 @@ namespace ImmersiveTouch
             {
                 if (currentAnimator == null || !currentAnimator.isHuman)
                 {
-                    NotCapable();
+                    NotCapable("Invalid avatar animator");
                     return;
                 }
 
@@ -218,9 +218,9 @@ namespace ImmersiveTouch
                         if (TurbonesEx.isPresent && m_IgnoreSelf) TurbonesEx.ExcludeBoneFromCollisionFeedback(db.Pointer);
                     }
 
-                    MelonLogger.Msg($"This avatar is OK! Left collider count: {registratedColliders[1].Count}. Right collider count: {registratedColliders[2].Count}.");
+                    MelonLogger.Msg($"This avatar is OK! Left count: {registratedColliders[1].Count}. Right count: {registratedColliders[2].Count}. {(m_IgnoreSelf ? "Ignoring" : "Listening for")} self collisions.");
                 }
-                else NotCapable();
+                else NotCapable("No hand colliders found");
             }
             catch (Exception e)
             {
@@ -228,9 +228,9 @@ namespace ImmersiveTouch
                 MelonLogger.Error($"Error when checking capability\n{e}");
             }
 
-            static void NotCapable()
+            static void NotCapable(string reason)
             {
-                MelonLogger.Warning("This avatar is not capable for Immersive Touch.");
+                MelonLogger.Warning($"This avatar is not capable for Immersive Touch: {reason}");
                 isCapable = false;
             }
         }
