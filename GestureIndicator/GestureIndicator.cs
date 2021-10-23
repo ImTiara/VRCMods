@@ -17,9 +17,16 @@ namespace GestureIndicator
         private float m_TextOpacity;
         private float m_X_Position;
         private float m_Y_Position;
+        private float m_HideAfterSeconds;
 
-        private TextMeshProUGUI m_LeftGestureText;
-        private TextMeshProUGUI m_RightGestureText;
+        private TextMeshProUGUI leftGestureText;
+        private TextMeshProUGUI rightGestureText;
+
+        private HandGestureController.EnumNPrivateSealedva9vUnique prevLeftGesture;
+        private HandGestureController.EnumNPrivateSealedva9vUnique prevRightGesture;
+
+        private DateTime leftTime;
+        private DateTime rightTime;
 
         public override void OnApplicationStart()
             => MelonCoroutines.Start(UiManagerInitializer());
@@ -33,6 +40,7 @@ namespace GestureIndicator
             MelonPreferences.CreateEntry(GetType().Name, "RightTextColor", "#00FFFF", "Right Text Color");
             MelonPreferences.CreateEntry(GetType().Name, "TextXPosition", 1.0f, "Text X Position");
             MelonPreferences.CreateEntry(GetType().Name, "TextYPosition", 1.0f, "Text Y Position");
+            MelonPreferences.CreateEntry(GetType().Name, "HideAfterSeconds", 0.0f, "Hide After Seconds (0 = never)");
 
             CreateIndicators();
 
@@ -47,6 +55,7 @@ namespace GestureIndicator
             m_RightTextColor = Manager.HexToColor(MelonPreferences.GetEntryValue<string>(GetType().Name, "RightTextColor"));
             m_X_Position = MelonPreferences.GetEntryValue<float>(GetType().Name, "TextXPosition");
             m_Y_Position = MelonPreferences.GetEntryValue<float>(GetType().Name, "TextYPosition");
+            m_HideAfterSeconds = MelonPreferences.GetEntryValue<float>(GetType().Name, "HideAfterSeconds");
 
             ToggleIndicators(m_Enable);
             ApplyTextColors();
@@ -61,35 +70,10 @@ namespace GestureIndicator
                 {
                     if (Manager.GetLocalVRCPlayer() != null)
                     {
-                        if (Manager.GetGestureLeftWeight() >= 0.1f)
-                        {
-                            switch (Manager.GetLeftGesture())
-                            {
-                                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue1: m_LeftGestureText.text = "Fist"; break;
-                                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue2: m_LeftGestureText.text = "Hand Open"; break;
-                                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue3: m_LeftGestureText.text = "Point"; break;
-                                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue4: m_LeftGestureText.text = "Victory"; break;
-                                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue5: m_LeftGestureText.text = "RockNRoll"; break;
-                                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue6: m_LeftGestureText.text = "Hand Gun"; break;
-                                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue7: m_LeftGestureText.text = "Thumbs Up"; break;
-                            }
-                        }
-                        else m_LeftGestureText.text = "";
-
-                        if (Manager.GetGestureRightWeight() >= 0.1f)
-                        {
-                            switch (Manager.GetRightGesture())
-                            {
-                                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue1: m_RightGestureText.text = "Fist"; break;
-                                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue2: m_RightGestureText.text = "Hand Open"; break;
-                                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue3: m_RightGestureText.text = "Point"; break;
-                                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue4: m_RightGestureText.text = "Victory"; break;
-                                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue5: m_RightGestureText.text = "RockNRoll"; break;
-                                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue6: m_RightGestureText.text = "Hand Gun"; break;
-                                case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue7: m_RightGestureText.text = "Thumbs Up"; break;
-                            }
-                        }
-                        else m_RightGestureText.text = "";
+                        if (m_HideAfterSeconds > 0)
+                            ShowTimedGestures();
+                        else
+                            ShowStaticGestures();
                     }
                 }
                 catch (Exception e) { MelonLogger.Error("Error checking gestures: " + e); }
@@ -98,28 +82,113 @@ namespace GestureIndicator
             }
         }
 
+        private void ShowStaticGestures()
+        {
+            if (Manager.GetGestureLeftWeight() >= 0.1f)
+            {
+                switch (Manager.GetLeftGesture())
+                {
+                    case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue1: leftGestureText.text = "Fist"; break;
+                    case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue2: leftGestureText.text = "Hand Open"; break;
+                    case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue3: leftGestureText.text = "Point"; break;
+                    case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue4: leftGestureText.text = "Victory"; break;
+                    case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue5: leftGestureText.text = "RockNRoll"; break;
+                    case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue6: leftGestureText.text = "Hand Gun"; break;
+                    case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue7: leftGestureText.text = "Thumbs Up"; break;
+                }
+            }
+            else leftGestureText.text = "";
+
+            if (Manager.GetGestureRightWeight() >= 0.1f)
+            {
+                switch (Manager.GetRightGesture())
+                {
+                    case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue1: rightGestureText.text = "Fist"; break;
+                    case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue2: rightGestureText.text = "Hand Open"; break;
+                    case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue3: rightGestureText.text = "Point"; break;
+                    case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue4: rightGestureText.text = "Victory"; break;
+                    case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue5: rightGestureText.text = "RockNRoll"; break;
+                    case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue6: rightGestureText.text = "Hand Gun"; break;
+                    case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue7: rightGestureText.text = "Thumbs Up"; break;
+                }
+            }
+            else rightGestureText.text = "";
+
+        }
+
+        private void ShowTimedGestures()
+        {
+            // Credits to MarkViews for their original pull request
+
+            var miliseconds = m_HideAfterSeconds * 1000;
+
+            var leftGesture = Manager.GetLeftGesture();
+            if (leftGesture != prevLeftGesture)
+            {
+                prevLeftGesture = leftGesture;
+                leftTime = DateTime.Now.AddMilliseconds(miliseconds);
+                if (Manager.GetGestureLeftWeight() >= 0.1f)
+                {
+                    switch (leftGesture)
+                    {
+                        case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue1: leftGestureText.text = "Fist"; break;
+                        case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue2: leftGestureText.text = "Hand Open"; break;
+                        case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue3: leftGestureText.text = "Point"; break;
+                        case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue4: leftGestureText.text = "Victory"; break;
+                        case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue5: leftGestureText.text = "RockNRoll"; break;
+                        case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue6: leftGestureText.text = "Hand Gun"; break;
+                        case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue7: leftGestureText.text = "Thumbs Up"; break;
+                    }
+                }
+                else leftGestureText.text = "";
+            }
+            else if (leftTime < DateTime.Now) leftGestureText.text = "";
+
+            var rightGesture = Manager.GetRightGesture();
+            if (rightGesture != prevRightGesture)
+            {
+                prevRightGesture = rightGesture;
+                rightTime = DateTime.Now.AddMilliseconds(miliseconds);
+                if (Manager.GetGestureRightWeight() >= 0.1f)
+                {
+                    switch (rightGesture)
+                    {
+                        case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue1: rightGestureText.text = "Fist"; break;
+                        case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue2: rightGestureText.text = "Hand Open"; break;
+                        case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue3: rightGestureText.text = "Point"; break;
+                        case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue4: rightGestureText.text = "Victory"; break;
+                        case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue5: rightGestureText.text = "RockNRoll"; break;
+                        case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue6: rightGestureText.text = "Hand Gun"; break;
+                        case HandGestureController.EnumNPrivateSealedva9vUnique.EnumValue7: rightGestureText.text = "Thumbs Up"; break;
+                    }
+                }
+                else rightGestureText.text = "";
+            }
+            else if (rightTime < DateTime.Now) rightGestureText.text = "";
+        }
+
         private void CreateIndicators()
         {
             Transform hud = Manager.GetVRCUiManager().transform.Find("UnscaledUI/HudContent");
             GameObject textTemplate = Manager.GetQuickMenu().transform.Find("Container/Window/QMNotificationsArea/DebugInfoPanel/Panel/Text_FPS").gameObject;
 
-            m_LeftGestureText = UnityEngine.Object.Instantiate(textTemplate, hud, true).GetComponent<TextMeshProUGUI>();
-            UnityEngine.Object.Destroy(m_LeftGestureText.GetComponent<TextBinding>());
-            m_LeftGestureText.name = "GestureIndicator(Left)";
-            RectTransform rectTransformLeft = m_LeftGestureText.GetComponent<RectTransform>();
+            leftGestureText = UnityEngine.Object.Instantiate(textTemplate, hud, true).GetComponent<TextMeshProUGUI>();
+            UnityEngine.Object.Destroy(leftGestureText.GetComponent<TextBinding>());
+            leftGestureText.name = "GestureIndicator(Left)";
+            leftGestureText.text = "";
+            leftGestureText.alignment = TextAlignmentOptions.MidlineLeft;
+            RectTransform rectTransformLeft = leftGestureText.GetComponent<RectTransform>();
             rectTransformLeft.localScale = new Vector2(1.0f, 1.0f);
             rectTransformLeft.sizeDelta = new Vector2(200f, -946f);
-            m_LeftGestureText.text = "";
-            m_LeftGestureText.alignment = TextAlignmentOptions.MidlineLeft;
 
-            m_RightGestureText = UnityEngine.Object.Instantiate(textTemplate, hud, true).GetComponent<TextMeshProUGUI>();
-            UnityEngine.Object.Destroy(m_RightGestureText.GetComponent<TextBinding>());
-            m_RightGestureText.name = "GestureIndicator(Right)";
-            RectTransform rectTransformRight = m_RightGestureText.GetComponent<RectTransform>();
+            rightGestureText = UnityEngine.Object.Instantiate(textTemplate, hud, true).GetComponent<TextMeshProUGUI>();
+            UnityEngine.Object.Destroy(rightGestureText.GetComponent<TextBinding>());
+            rightGestureText.name = "GestureIndicator(Right)";
+            rightGestureText.text = "";
+            rightGestureText.alignment = TextAlignmentOptions.MidlineRight;
+            RectTransform rectTransformRight = rightGestureText.GetComponent<RectTransform>();
             rectTransformRight.localScale = new Vector2(1.0f, 1.0f);
             rectTransformRight.sizeDelta = new Vector2(200f, -946f);
-            m_RightGestureText.text = "";
-            m_RightGestureText.alignment = TextAlignmentOptions.MidlineRight;
 
             ApplyTextColors();
             ApplyTextPositions();
@@ -131,25 +200,25 @@ namespace GestureIndicator
 
             Color colorL = m_LeftTextColor;
             colorL.a = op;
-            m_LeftGestureText.color = colorL;
+            leftGestureText.color = colorL;
 
             Color colorR = m_RightTextColor;
             colorR.a = op;
-            m_RightGestureText.color = colorR;
+            rightGestureText.color = colorR;
         }
 
         private void ApplyTextPositions()
         {
-            m_LeftGestureText.GetComponent<RectTransform>().anchoredPosition = new Vector2((-200f * m_X_Position) - 102.5f, -415f * m_Y_Position);
-            m_RightGestureText.GetComponent<RectTransform>().anchoredPosition = new Vector2((200f * m_X_Position) - 102.5f, -415f * m_Y_Position);
+            leftGestureText.GetComponent<RectTransform>().anchoredPosition = new Vector2((-200f * m_X_Position) - 102.5f, -415f * m_Y_Position);
+            rightGestureText.GetComponent<RectTransform>().anchoredPosition = new Vector2((200f * m_X_Position) - 102.5f, -415f * m_Y_Position);
         }
 
         private void ToggleIndicators(bool enable)
         {
             if (enable) MelonCoroutines.Start(CheckGesture());
 
-            m_LeftGestureText.gameObject.SetActive(enable);
-            m_RightGestureText.gameObject.SetActive(enable);
+            leftGestureText.gameObject.SetActive(enable);
+            rightGestureText.gameObject.SetActive(enable);
         }
 
         public IEnumerator UiManagerInitializer()
