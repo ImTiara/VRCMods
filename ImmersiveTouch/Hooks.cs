@@ -18,9 +18,9 @@ namespace ImmersiveTouch
         public delegate void CollideDelegate(IntPtr __0, IntPtr __1, float __2);
         public static CollideDelegate collideDelegate;
 
-        public static void ApplyPatches()
+        public static void ApplyPatches(bool hasTurbones)
         {
-            ApplyHooks();
+            if (!hasTurbones) ApplyHooks();
             ApplyHarmonyHooks();
         }
 

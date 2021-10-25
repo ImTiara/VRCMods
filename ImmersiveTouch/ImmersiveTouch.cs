@@ -61,7 +61,7 @@ namespace ImmersiveTouch
 
             OnPreferencesSaved();
 
-            Hooks.ApplyPatches();
+            Hooks.ApplyPatches(TurbonesEx.isPresent);
         }
 
         public override void OnPreferencesSaved()
