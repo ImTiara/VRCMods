@@ -88,13 +88,13 @@ namespace GestureIndicator
             {
                 switch (Manager.GetLeftGesture())
                 {
-                    case HandGestureController.Gesture.EnumValue1: leftGestureText.text = "Fist"; break;
-                    case HandGestureController.Gesture.EnumValue2: leftGestureText.text = "Hand Open"; break;
-                    case HandGestureController.Gesture.EnumValue3: leftGestureText.text = "Point"; break;
-                    case HandGestureController.Gesture.EnumValue4: leftGestureText.text = "Victory"; break;
-                    case HandGestureController.Gesture.EnumValue5: leftGestureText.text = "RockNRoll"; break;
-                    case HandGestureController.Gesture.EnumValue6: leftGestureText.text = "Hand Gun"; break;
-                    case HandGestureController.Gesture.EnumValue7: leftGestureText.text = "Thumbs Up"; break;
+                    case HandGestureController.Gesture.Fist: leftGestureText.text = "Fist"; break;
+                    case HandGestureController.Gesture.Open: leftGestureText.text = "Hand Open"; break;
+                    case HandGestureController.Gesture.Point: leftGestureText.text = "Point"; break;
+                    case HandGestureController.Gesture.Peace: leftGestureText.text = "Victory"; break;
+                    case HandGestureController.Gesture.RockNRoll: leftGestureText.text = "RockNRoll"; break;
+                    case HandGestureController.Gesture.Gun: leftGestureText.text = "Hand Gun"; break;
+                    case HandGestureController.Gesture.ThumbsUp: leftGestureText.text = "Thumbs Up"; break;
                 }
             }
             else leftGestureText.text = "";
@@ -103,13 +103,13 @@ namespace GestureIndicator
             {
                 switch (Manager.GetRightGesture())
                 {
-                    case HandGestureController.Gesture.EnumValue1: rightGestureText.text = "Fist"; break;
-                    case HandGestureController.Gesture.EnumValue2: rightGestureText.text = "Hand Open"; break;
-                    case HandGestureController.Gesture.EnumValue3: rightGestureText.text = "Point"; break;
-                    case HandGestureController.Gesture.EnumValue4: rightGestureText.text = "Victory"; break;
-                    case HandGestureController.Gesture.EnumValue5: rightGestureText.text = "RockNRoll"; break;
-                    case HandGestureController.Gesture.EnumValue6: rightGestureText.text = "Hand Gun"; break;
-                    case HandGestureController.Gesture.EnumValue7: rightGestureText.text = "Thumbs Up"; break;
+                    case HandGestureController.Gesture.Fist: rightGestureText.text = "Fist"; break;
+                    case HandGestureController.Gesture.Open: rightGestureText.text = "Hand Open"; break;
+                    case HandGestureController.Gesture.Point: rightGestureText.text = "Point"; break;
+                    case HandGestureController.Gesture.Peace: rightGestureText.text = "Victory"; break;
+                    case HandGestureController.Gesture.RockNRoll: rightGestureText.text = "RockNRoll"; break;
+                    case HandGestureController.Gesture.Gun: rightGestureText.text = "Hand Gun"; break;
+                    case HandGestureController.Gesture.ThumbsUp: rightGestureText.text = "Thumbs Up"; break;
                 }
             }
             else rightGestureText.text = "";
@@ -131,13 +131,13 @@ namespace GestureIndicator
                 {
                     switch (leftGesture)
                     {
-                        case HandGestureController.Gesture.EnumValue1: leftGestureText.text = "Fist"; break;
-                        case HandGestureController.Gesture.EnumValue2: leftGestureText.text = "Hand Open"; break;
-                        case HandGestureController.Gesture.EnumValue3: leftGestureText.text = "Point"; break;
-                        case HandGestureController.Gesture.EnumValue4: leftGestureText.text = "Victory"; break;
-                        case HandGestureController.Gesture.EnumValue5: leftGestureText.text = "RockNRoll"; break;
-                        case HandGestureController.Gesture.EnumValue6: leftGestureText.text = "Hand Gun"; break;
-                        case HandGestureController.Gesture.EnumValue7: leftGestureText.text = "Thumbs Up"; break;
+                        case HandGestureController.Gesture.Fist: leftGestureText.text = "Fist"; break;
+                        case HandGestureController.Gesture.Open: leftGestureText.text = "Hand Open"; break;
+                        case HandGestureController.Gesture.Point: leftGestureText.text = "Point"; break;
+                        case HandGestureController.Gesture.Peace: leftGestureText.text = "Victory"; break;
+                        case HandGestureController.Gesture.RockNRoll: leftGestureText.text = "RockNRoll"; break;
+                        case HandGestureController.Gesture.Gun: leftGestureText.text = "Hand Gun"; break;
+                        case HandGestureController.Gesture.ThumbsUp: leftGestureText.text = "Thumbs Up"; break;
                     }
                 }
                 else leftGestureText.text = "";
@@ -153,13 +153,13 @@ namespace GestureIndicator
                 {
                     switch (rightGesture)
                     {
-                        case HandGestureController.Gesture.EnumValue1: rightGestureText.text = "Fist"; break;
-                        case HandGestureController.Gesture.EnumValue2: rightGestureText.text = "Hand Open"; break;
-                        case HandGestureController.Gesture.EnumValue3: rightGestureText.text = "Point"; break;
-                        case HandGestureController.Gesture.EnumValue4: rightGestureText.text = "Victory"; break;
-                        case HandGestureController.Gesture.EnumValue5: rightGestureText.text = "RockNRoll"; break;
-                        case HandGestureController.Gesture.EnumValue6: rightGestureText.text = "Hand Gun"; break;
-                        case HandGestureController.Gesture.EnumValue7: rightGestureText.text = "Thumbs Up"; break;
+                        case HandGestureController.Gesture.Fist: rightGestureText.text = "Fist"; break;
+                        case HandGestureController.Gesture.Open: rightGestureText.text = "Hand Open"; break;
+                        case HandGestureController.Gesture.Point: rightGestureText.text = "Point"; break;
+                        case HandGestureController.Gesture.Peace: rightGestureText.text = "Victory"; break;
+                        case HandGestureController.Gesture.RockNRoll: rightGestureText.text = "RockNRoll"; break;
+                        case HandGestureController.Gesture.Gun: rightGestureText.text = "Hand Gun"; break;
+                        case HandGestureController.Gesture.ThumbsUp: rightGestureText.text = "Thumbs Up"; break;
                     }
                 }
                 else rightGestureText.text = "";
