@@ -11,11 +11,11 @@ namespace GestureIndicator
             return c;
         }
 
-        public static HandGestureController.EnumNPrivateSealedva9vUnique GetLeftGesture()
-            => GetHandGestureController().field_Private_EnumNPrivateSealedva9vUnique_0;
+        public static HandGestureController.Gesture GetLeftGesture()
+            => GetHandGestureController().field_Private_Gesture_0;
         
-        public static HandGestureController.EnumNPrivateSealedva9vUnique GetRightGesture()
-            => GetHandGestureController().field_Private_EnumNPrivateSealedva9vUnique_2;
+        public static HandGestureController.Gesture GetRightGesture()
+            => GetHandGestureController().field_Private_Gesture_2;
         
         public static HandGestureController GetHandGestureController()
             => GetLocalVRCPlayer().field_Private_VRC_AnimationController_0.field_Private_HandGestureController_0;
