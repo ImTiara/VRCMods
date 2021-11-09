@@ -12,10 +12,10 @@ namespace ImmersiveTouch
             => VRCPlayer.field_Internal_Static_VRCPlayer_0;
 
         public static VRCPlayerApi GetLocalVRCPlayerApi()
-            => GetLocalVRCPlayer()?.prop_VRCPlayerApi_0;
+            => VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCPlayerApi_0;
 
         public static VRCAvatarManager GetLocalAvatarManager()
-            => GetLocalVRCPlayer()?.prop_VRCAvatarManager_0;
+            => VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0;
 
         public static Il2CppArrayBase<DynamicBoneCollider> GetDynamicBoneColliders(this Animator animator, HumanBodyBones bone)
             => animator.GetBoneTransform(bone).GetComponentsInChildren<DynamicBoneCollider>(true);
@@ -36,5 +36,8 @@ namespace ImmersiveTouch
                 if (collider.Pointer == pointer) return true;
             return false;
         }
+
+        public static int CalculateLayerMask(bool allowWorld, bool allowPlayers)
+            => (allowWorld ? (1 << 0) : 0) | (allowPlayers ? (1 << 9) : 0);
     }
 }

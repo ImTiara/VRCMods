@@ -18,6 +18,9 @@ namespace ImmersiveTouch
 
         private static bool m_Enable;
         private static bool m_IgnoreSelf;
+        private static bool m_MeshHaptic;
+        private static bool m_MeshHapticWorld;
+        private static bool m_MeshHapticPlayers;
 
         private static float m_HapticAmplitude;
         private static float m_HapticSensitivity;
@@ -32,11 +35,14 @@ namespace ImmersiveTouch
         private static Vector3 previousLeftWristPosition;
         private static Vector3 previousRightWristPosition;
 
-        public static readonly Dictionary<int, List<DynamicBoneCollider>> registratedColliders = new Dictionary<int, List<DynamicBoneCollider>>();
+        public static readonly List<DynamicBoneCollider> allRegistratedColliders = new List<DynamicBoneCollider>();
+        public static readonly List<DynamicBoneCollider> registratedLeftColliders = new List<DynamicBoneCollider>();
+        public static readonly List<DynamicBoneCollider> registratedRightColliders = new List<DynamicBoneCollider>();
 
         public static readonly List<DynamicBone> localDynamicBones = new List<DynamicBone>();
 
-        [ThreadStatic] static IntPtr currentDBI;
+        [ThreadStatic]
+        public static IntPtr currentDBI;
 
         private static GameObject currentAvatarObject;
         private static Animator currentAnimator;
@@ -52,12 +58,16 @@ namespace ImmersiveTouch
         public void OnUiManagerInit()
         {
             TurbonesEx.SetIsPresent();
+            MeshHapticEx.Setup();
 
             MelonPreferences.CreateCategory(GetType().Name, "Immersive Touch");
             MelonPreferences.CreateEntry(GetType().Name, "Enable", true, "Enable Immersive Touch");
             MelonPreferences.CreateEntry(GetType().Name, "HapticAmplitude", 100.0f, "Haptic Amplitude (%)");
             MelonPreferences.CreateEntry(GetType().Name, "HapticSensitivity", 70.0f, "Haptic Sensitivity");
             MelonPreferences.CreateEntry(GetType().Name, "IgnoreSelf", true, "Ignore Self Collisions");
+            MelonPreferences.CreateEntry(GetType().Name, "MeshHaptic", false, "Mesh Haptic");
+            MelonPreferences.CreateEntry(GetType().Name, "MeshHapticWorld", true, "Mesh Haptic World");
+            MelonPreferences.CreateEntry(GetType().Name, "MeshHapticPlayers", true, "Mesh Haptic Players");
 
             OnPreferencesSaved();
 
@@ -70,6 +80,11 @@ namespace ImmersiveTouch
             m_HapticAmplitude = MelonPreferences.GetEntryValue<float>(GetType().Name, "HapticAmplitude") / 100.0f;
             m_HapticSensitivity = MelonPreferences.GetEntryValue<float>(GetType().Name, "HapticSensitivity") * 10;
             m_IgnoreSelf = MelonPreferences.GetEntryValue<bool>(GetType().Name, "IgnoreSelf");
+            m_MeshHaptic = MelonPreferences.GetEntryValue<bool>(GetType().Name, "MeshHaptic");
+            m_MeshHapticWorld = MelonPreferences.GetEntryValue<bool>(GetType().Name, "MeshHapticWorld");
+            m_MeshHapticPlayers = MelonPreferences.GetEntryValue<bool>(GetType().Name, "MeshHapticPlayers");
+
+            MeshHapticEx.cullingMask = Manager.CalculateLayerMask(m_MeshHapticWorld, m_MeshHapticPlayers);
 
             TryCapability();
         }
@@ -106,7 +121,7 @@ namespace ImmersiveTouch
 
             try
             {
-                if (!isCapable || (!registratedColliders[1].HasPointer(instance) && !registratedColliders[2].HasPointer(instance)))
+                if (!isCapable || (!allRegistratedColliders.HasPointer(instance)))
                 {
                     InvokeCollide();
                     return;
@@ -134,15 +149,15 @@ namespace ImmersiveTouch
 
             ulong mask = TurbonesEx.GetAndClearCollidingGroupsMask();
 
-            if ((mask & 1) != 0) SendHaptic(registratedColliders[1][0].Pointer);
-            if ((mask & 2) != 0) SendHaptic(registratedColliders[2][0].Pointer);
+            if ((mask & 1) != 0) SendHaptic(registratedLeftColliders[0].Pointer);
+            if ((mask & 2) != 0) SendHaptic(registratedRightColliders[0].Pointer);
         }
 
-        private static void SendHaptic(IntPtr collider)
+        public static void SendHaptic(IntPtr collider)
         {
             if (m_IgnoreSelf && currentDBI != IntPtr.Zero && localDynamicBones.HasPointer(currentDBI)) return;
 
-            if (registratedColliders[1].HasPointer(collider) && leftWrist != null && Vector3.Distance(previousLeftWristPosition, leftWrist.position) > hapticDistance)
+            if (registratedLeftColliders.HasPointer(collider) && leftWrist != null && Vector3.Distance(previousLeftWristPosition, leftWrist.position) > hapticDistance)
             {
                 Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
 
@@ -151,7 +166,7 @@ namespace ImmersiveTouch
                 return;
             }
 
-            if (registratedColliders[2].HasPointer(collider) && rightWrist != null && Vector3.Distance(previousRightWristPosition, rightWrist.position) > hapticDistance)
+            if (registratedRightColliders.HasPointer(collider) && rightWrist != null && Vector3.Distance(previousRightWristPosition, rightWrist.position) > hapticDistance)
             {
                 Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
 
@@ -169,6 +184,8 @@ namespace ImmersiveTouch
                 TurbonesEx.UnregisterExcludedBonesFromCollisionFeedback();
             }
 
+            MeshHapticEx.Destroy();
+
             if (!m_Enable || Manager.GetLocalVRCPlayer() == null)
             {
                 isCapable = false;
@@ -185,28 +202,31 @@ namespace ImmersiveTouch
 
                 hapticDistance = currentViewHeight / m_HapticSensitivity;
 
-                registratedColliders.Clear();
-                registratedColliders.Add(1, new List<DynamicBoneCollider>());
-                registratedColliders.Add(2, new List<DynamicBoneCollider>());
+                registratedLeftColliders.Clear();
+                registratedRightColliders.Clear();
 
                 foreach (var collider in Manager.GetDynamicBoneColliders(currentAnimator, HumanBodyBones.LeftHand))
                 {
-                    registratedColliders[1].Add(collider);
+                    registratedLeftColliders.Add(collider);
 
                     if (TurbonesEx.isPresent) TurbonesEx.RegisterColliderForCollisionFeedback(collider.Pointer, 0);
                 }
 
                 foreach (var collider in Manager.GetDynamicBoneColliders(currentAnimator, HumanBodyBones.RightHand))
                 {
-                    registratedColliders[2].Add(collider);
+                    registratedRightColliders.Add(collider);
 
                     if (TurbonesEx.isPresent) TurbonesEx.RegisterColliderForCollisionFeedback(collider.Pointer, 1);
                 }
 
+                allRegistratedColliders.Clear();
+                allRegistratedColliders.AddRange(registratedLeftColliders);
+                allRegistratedColliders.AddRange(registratedRightColliders);
+
                 leftWrist = currentAnimator.GetBoneTransform(HumanBodyBones.LeftHand);
                 rightWrist = currentAnimator.GetBoneTransform(HumanBodyBones.RightHand);
 
-                isCapable = registratedColliders[1].Count != 0 && registratedColliders[2].Count != 0;
+                isCapable = registratedLeftColliders.Count != 0 && registratedRightColliders.Count != 0;
 
                 if (isCapable)
                 {
@@ -218,7 +238,9 @@ namespace ImmersiveTouch
                         if (TurbonesEx.isPresent && m_IgnoreSelf) TurbonesEx.ExcludeBoneFromCollisionFeedback(db.Pointer);
                     }
 
-                    MelonLogger.Msg($"This avatar is OK! Left count: {registratedColliders[1].Count}. Right count: {registratedColliders[2].Count}. {(m_IgnoreSelf ? "Ignoring" : "Listening for")} self collisions.");
+                    if (m_MeshHaptic) MeshHapticEx.SetupAvatar(currentAnimator, registratedLeftColliders[0], registratedRightColliders[0]);
+
+                    MelonLogger.Msg($"This avatar is OK! Left count: {registratedLeftColliders.Count}. Right count: {registratedRightColliders.Count}. {(m_IgnoreSelf ? "Ignoring" : "Listening for")} self collisions.");
                 }
                 else NotCapable("No hand colliders found");
             }

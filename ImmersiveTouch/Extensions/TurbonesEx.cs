@@ -45,12 +45,9 @@ namespace ImmersiveTouch.Extensions
 
         public static void UnregisterCollisionFeedbackColliders()
         {
-            foreach (var container in ImmersiveTouch.registratedColliders)
+            foreach (var collider in ImmersiveTouch.allRegistratedColliders)
             {
-                foreach (var collider in container.Value)
-                {
-                    UnregisterColliderForCollisionFeedback(collider.Pointer);
-                }
+                UnregisterColliderForCollisionFeedback(collider.Pointer);
             }
         }
 
