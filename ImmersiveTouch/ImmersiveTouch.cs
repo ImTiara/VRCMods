@@ -174,14 +174,14 @@ namespace ImmersiveTouch
 
         public static void SendHaptic(Transform wrist)
         {
-            if (wrist == leftWrist && Vector3.Distance(previousLeftWristPosition, leftWrist.position) > hapticDistance)
+            if (leftWrist != null && wrist == leftWrist && Vector3.Distance(previousLeftWristPosition, leftWrist.position) > hapticDistance)
             {
                 Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
 
                 previousLeftWristPosition = leftWrist.position;
             }
 
-            if (wrist == rightWrist && Vector3.Distance(previousRightWristPosition, rightWrist.position) > hapticDistance)
+            if (rightWrist != null && wrist == rightWrist && Vector3.Distance(previousRightWristPosition, rightWrist.position) > hapticDistance)
             {
                 Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
 

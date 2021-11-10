@@ -120,7 +120,7 @@ namespace ImmersiveTouch.Extensions
             {
                 if (Marshal.PtrToStructure<Color32>(readback.GetDataRaw(0)) != Color.black)
                 {
-                    if (leftSteamVRModel.activeSelf || rightSteamVRModel.activeSelf) return;
+                    if (leftSteamVRModel.activeSelf || rightSteamVRModel.activeSelf || wrist == null) return;
 
                     ImmersiveTouch.SendHaptic(wrist);
                 }
