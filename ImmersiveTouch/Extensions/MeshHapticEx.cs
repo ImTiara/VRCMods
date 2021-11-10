@@ -12,15 +12,20 @@ namespace ImmersiveTouch.Extensions
 
         public static int cullingMask;
 
+        public static float cameraWidthModifier = 4.0f;
+
         private static RenderTexture leftTexture;
         private static RenderTexture rightTexture;
 
         private static GameObject leftObject;
         private static GameObject rightObject;
 
+        private static GameObject leftSteamVRModel;
+        private static GameObject rightSteamVRModel;
+
         private Il2CppSystem.Action<AsyncGPUReadbackRequest> asyncGPUReadbackRequest;
 
-        private DynamicBoneCollider collider;
+        private Transform wrist;
 
         public static void Setup()
         {
@@ -39,6 +44,15 @@ namespace ImmersiveTouch.Extensions
                 anisoLevel = 0
             };
             rightTexture.Create();
+
+            foreach (var model in VRCVrCamera.field_Private_Static_VRCVrCamera_0.GetComponentsInChildren<SteamVR_RenderModel>(true))
+            {
+                switch(model.transform.parent.name)
+                {
+                    case "Controller (left)": leftSteamVRModel = model.gameObject; break;
+                    case "Controller (right)": rightSteamVRModel = model.gameObject; break;
+                }
+            }
         }
 
         public static void Destroy()
@@ -47,7 +61,7 @@ namespace ImmersiveTouch.Extensions
             if (rightObject != null) Destroy(rightObject);
         }
 
-        public static void SetupAvatar(Animator animator, DynamicBoneCollider leftCollider, DynamicBoneCollider rightCollider)
+        public static void SetupAvatar(Animator animator)
         {
             #region Left
             Transform left = new GameObject("ImmersiveTouch_Left_Camera").transform;
@@ -59,10 +73,10 @@ namespace ImmersiveTouch.Extensions
             left.localEulerAngles = new Vector3(0, 180, 0);
 
             Camera leftCamera = SetupCamera(left.gameObject);
-            leftCamera.orthographicSize = Vector3.Distance(animator.GetBoneTransform(HumanBodyBones.LeftHand).position, animator.GetBoneTransform(HumanBodyBones.LeftMiddleDistal).position) / 4.0f;
+            leftCamera.orthographicSize = Vector3.Distance(animator.GetBoneTransform(HumanBodyBones.LeftHand).position, animator.GetBoneTransform(HumanBodyBones.LeftMiddleDistal).position) / cameraWidthModifier;
 
             var leftCameraHaptic = left.gameObject.AddComponent<MeshHapticEx>();
-            leftCameraHaptic.collider = leftCollider;
+            leftCameraHaptic.wrist = left.transform.parent;
             #endregion
 
             #region Right
@@ -75,10 +89,10 @@ namespace ImmersiveTouch.Extensions
             right.localEulerAngles = new Vector3(0, 180, 0);
 
             Camera rightCamera = SetupCamera(right.gameObject);
-            rightCamera.orthographicSize = Vector3.Distance(animator.GetBoneTransform(HumanBodyBones.RightHand).position, animator.GetBoneTransform(HumanBodyBones.RightMiddleDistal).position) / 4.0f;
+            rightCamera.orthographicSize = Vector3.Distance(animator.GetBoneTransform(HumanBodyBones.RightHand).position, animator.GetBoneTransform(HumanBodyBones.RightMiddleDistal).position) / cameraWidthModifier;
 
             var rightCameraHaptic = right.gameObject.AddComponent<MeshHapticEx>();
-            rightCameraHaptic.collider = rightCollider;
+            rightCameraHaptic.wrist = right.transform.parent;
             #endregion
 
             static Camera SetupCamera(GameObject _gameObject)
@@ -89,8 +103,8 @@ namespace ImmersiveTouch.Extensions
                 camera.cullingMask = cullingMask;
                 camera.backgroundColor = Color.black;
                 camera.orthographic = true;
-                camera.nearClipPlane = -0.04f;
-                camera.farClipPlane = 0.04f;
+                camera.nearClipPlane = -(ImmersiveTouch.currentViewHeight / 40.0f);
+                camera.farClipPlane = ImmersiveTouch.currentViewHeight / 40.0f;
                 camera.allowHDR = false;
                 camera.allowMSAA = false;
                 camera.targetTexture = rightTexture;
@@ -106,8 +120,9 @@ namespace ImmersiveTouch.Extensions
             {
                 if (Marshal.PtrToStructure<Color32>(readback.GetDataRaw(0)) != Color.black)
                 {
-                    ImmersiveTouch.currentDBI = IntPtr.Zero;
-                    ImmersiveTouch.SendHaptic(collider.Pointer);
+                    if (leftSteamVRModel.activeSelf || rightSteamVRModel.activeSelf) return;
+
+                    ImmersiveTouch.SendHaptic(wrist);
                 }
             });
         }

@@ -44,9 +44,9 @@ namespace ImmersiveTouch
         [ThreadStatic]
         public static IntPtr currentDBI;
 
-        private static GameObject currentAvatarObject;
-        private static Animator currentAnimator;
-        private static float currentViewHeight;
+        public static GameObject currentAvatarObject;
+        public static Animator currentAnimator;
+        public static float currentViewHeight;
 
         public override void OnApplicationStart()
         {
@@ -162,11 +162,26 @@ namespace ImmersiveTouch
                 Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
 
                 previousLeftWristPosition = leftWrist.position;
-
-                return;
             }
 
             if (registratedRightColliders.HasPointer(collider) && rightWrist != null && Vector3.Distance(previousRightWristPosition, rightWrist.position) > hapticDistance)
+            {
+                Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
+
+                previousRightWristPosition = rightWrist.position;
+            }
+        }
+
+        public static void SendHaptic(Transform wrist)
+        {
+            if (wrist == leftWrist && Vector3.Distance(previousLeftWristPosition, leftWrist.position) > hapticDistance)
+            {
+                Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
+
+                previousLeftWristPosition = leftWrist.position;
+            }
+
+            if (wrist == rightWrist && Vector3.Distance(previousRightWristPosition, rightWrist.position) > hapticDistance)
             {
                 Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
 
@@ -196,7 +211,7 @@ namespace ImmersiveTouch
             {
                 if (currentAnimator == null || !currentAnimator.isHuman)
                 {
-                    NotCapable("Invalid avatar animator");
+                    CapabilityResult("Invalid avatar animator");
                     return;
                 }
 
@@ -226,6 +241,8 @@ namespace ImmersiveTouch
                 leftWrist = currentAnimator.GetBoneTransform(HumanBodyBones.LeftHand);
                 rightWrist = currentAnimator.GetBoneTransform(HumanBodyBones.RightHand);
 
+                if (m_MeshHaptic && (m_MeshHapticPlayers || m_MeshHapticWorld)) MeshHapticEx.SetupAvatar(currentAnimator);
+
                 isCapable = registratedLeftColliders.Count != 0 && registratedRightColliders.Count != 0;
 
                 if (isCapable)
@@ -238,11 +255,9 @@ namespace ImmersiveTouch
                         if (TurbonesEx.isPresent && m_IgnoreSelf) TurbonesEx.ExcludeBoneFromCollisionFeedback(db.Pointer);
                     }
 
-                    if (m_MeshHaptic) MeshHapticEx.SetupAvatar(currentAnimator, registratedLeftColliders[0], registratedRightColliders[0]);
-
-                    MelonLogger.Msg($"This avatar is OK! Left count: {registratedLeftColliders.Count}. Right count: {registratedRightColliders.Count}. {(m_IgnoreSelf ? "Ignoring" : "Listening for")} self collisions.");
+                    MelonLogger.Msg($"This avatar is OK! Left collider count: {registratedLeftColliders.Count}. Right collider count: {registratedRightColliders.Count}");
                 }
-                else NotCapable("No hand colliders found");
+                else CapabilityResult("No hand colliders found");
             }
             catch (Exception e)
             {
@@ -250,9 +265,9 @@ namespace ImmersiveTouch
                 MelonLogger.Error($"Error when checking capability\n{e}");
             }
 
-            static void NotCapable(string reason)
+            static void CapabilityResult(string reason)
             {
-                MelonLogger.Warning($"This avatar is not capable for Immersive Touch: {reason}");
+                MelonLogger.Warning($"Capability Result: {reason}");
                 isCapable = false;
             }
         }
