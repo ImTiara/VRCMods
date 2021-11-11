@@ -132,7 +132,7 @@ namespace ImmersiveTouch
                 InvokeCollide();
 
                 // If the particle position was changed after the invoke, we have a collision!
-                if (!prevParticlePos.Equals(Marshal.PtrToStructure<Vector3>(particlePosition)))
+                if (prevParticlePos != Marshal.PtrToStructure<Vector3>(particlePosition))
                 {
                     SendHaptic(instance);
                 }
