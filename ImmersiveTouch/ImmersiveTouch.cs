@@ -17,7 +17,8 @@ namespace ImmersiveTouch
         public static HarmonyLib.Harmony harmony;
 
         private static bool m_Enable;
-        private static bool m_IgnoreSelf;
+        private static bool m_ColliderHaptic;
+        private static bool m_ColliderHapticIgnoreSelf;
         private static bool m_MeshHaptic;
         private static bool m_MeshHapticWorld;
         private static bool m_MeshHapticPlayers;
@@ -25,7 +26,7 @@ namespace ImmersiveTouch
         private static float m_HapticAmplitude;
         private static float m_HapticSensitivity;
 
-        private static bool isCapable;
+        private static bool isColliderHapticCapable;
 
         private static float hapticDistance;
 
@@ -64,7 +65,8 @@ namespace ImmersiveTouch
             MelonPreferences.CreateEntry(GetType().Name, "Enable", true, "Enable Immersive Touch");
             MelonPreferences.CreateEntry(GetType().Name, "HapticAmplitude", 100.0f, "Haptic Amplitude (%)");
             MelonPreferences.CreateEntry(GetType().Name, "HapticSensitivity", 70.0f, "Haptic Sensitivity");
-            MelonPreferences.CreateEntry(GetType().Name, "IgnoreSelf", true, "Ignore Self Collisions");
+            MelonPreferences.CreateEntry(GetType().Name, "ColliderHaptic", true, "Collider Haptic");
+            MelonPreferences.CreateEntry(GetType().Name, "IgnoreSelf", false, "Ignore Self Collisions");
             MelonPreferences.CreateEntry(GetType().Name, "MeshHaptic", false, "Mesh Haptic");
             MelonPreferences.CreateEntry(GetType().Name, "MeshHapticWorld", true, "Mesh Haptic World");
             MelonPreferences.CreateEntry(GetType().Name, "MeshHapticPlayers", true, "Mesh Haptic Players");
@@ -79,14 +81,15 @@ namespace ImmersiveTouch
             m_Enable = MelonPreferences.GetEntryValue<bool>(GetType().Name, "Enable");
             m_HapticAmplitude = MelonPreferences.GetEntryValue<float>(GetType().Name, "HapticAmplitude") / 100.0f;
             m_HapticSensitivity = MelonPreferences.GetEntryValue<float>(GetType().Name, "HapticSensitivity") * 10;
-            m_IgnoreSelf = MelonPreferences.GetEntryValue<bool>(GetType().Name, "IgnoreSelf");
+            m_ColliderHaptic = MelonPreferences.GetEntryValue<bool>(GetType().Name, "ColliderHaptic");
+            m_ColliderHapticIgnoreSelf = MelonPreferences.GetEntryValue<bool>(GetType().Name, "IgnoreSelf");
             m_MeshHaptic = MelonPreferences.GetEntryValue<bool>(GetType().Name, "MeshHaptic");
             m_MeshHapticWorld = MelonPreferences.GetEntryValue<bool>(GetType().Name, "MeshHapticWorld");
             m_MeshHapticPlayers = MelonPreferences.GetEntryValue<bool>(GetType().Name, "MeshHapticPlayers");
 
             MeshHapticEx.cullingMask = Manager.CalculateLayerMask(m_MeshHapticWorld, m_MeshHapticPlayers);
 
-            TryCapability();
+            SetupAvatar();
         }
 
         public static void OnAvatarChanged(VRCAvatarManager __instance)
@@ -99,7 +102,7 @@ namespace ImmersiveTouch
                 currentAnimator = __instance.field_Private_Animator_0;
                 currentViewHeight = __instance.field_Private_VRC_AvatarDescriptor_0.ViewPosition.y;
 
-                TryCapability();
+                SetupAvatar();
             }
             catch (Exception e)
             {
@@ -121,7 +124,7 @@ namespace ImmersiveTouch
 
             try
             {
-                if (!isCapable || (!allRegistratedColliders.HasPointer(instance)))
+                if (!isColliderHapticCapable || (!allRegistratedColliders.HasPointer(instance)))
                 {
                     InvokeCollide();
                     return;
@@ -145,7 +148,7 @@ namespace ImmersiveTouch
 
         public override void OnUpdate()
         {
-            if (!TurbonesEx.isPresent || !isCapable) return;
+            if (!TurbonesEx.isPresent || !isColliderHapticCapable) return;
 
             ulong mask = TurbonesEx.GetAndClearCollidingGroupsMask();
 
@@ -155,7 +158,7 @@ namespace ImmersiveTouch
 
         public static void SendHaptic(IntPtr collider)
         {
-            if (m_IgnoreSelf && currentDBI != IntPtr.Zero && localDynamicBones.HasPointer(currentDBI)) return;
+            if (m_ColliderHapticIgnoreSelf && currentDBI != IntPtr.Zero && localDynamicBones.HasPointer(currentDBI)) return;
 
             if (registratedLeftColliders.HasPointer(collider) && leftWrist != null && Vector3.Distance(previousLeftWristPosition, leftWrist.position) > hapticDistance)
             {
@@ -189,9 +192,15 @@ namespace ImmersiveTouch
             }
         }
 
-        private static void TryCapability()
+        private static void SetupAvatar()
         {
+            isColliderHapticCapable = false;
             currentDBI = IntPtr.Zero;
+
+            allRegistratedColliders.Clear();
+            registratedLeftColliders.Clear();
+            registratedRightColliders.Clear();
+            localDynamicBones.Clear();
 
             if (TurbonesEx.isPresent)
             {
@@ -201,74 +210,72 @@ namespace ImmersiveTouch
 
             MeshHapticEx.Destroy();
 
-            if (!m_Enable || Manager.GetLocalVRCPlayer() == null)
-            {
-                isCapable = false;
-                return;
-            }
+            if (!m_Enable || Manager.GetLocalVRCPlayer() == null) return;
 
             try
             {
                 if (currentAnimator == null || !currentAnimator.isHuman)
                 {
-                    CapabilityResult("Invalid avatar animator");
+                    FailedCapabilityResult("Invalid avatar animator.");
                     return;
                 }
 
                 hapticDistance = currentViewHeight / m_HapticSensitivity;
 
-                registratedLeftColliders.Clear();
-                registratedRightColliders.Clear();
-
-                foreach (var collider in Manager.GetDynamicBoneColliders(currentAnimator, HumanBodyBones.LeftHand))
-                {
-                    registratedLeftColliders.Add(collider);
-
-                    if (TurbonesEx.isPresent) TurbonesEx.RegisterColliderForCollisionFeedback(collider.Pointer, 0);
-                }
-
-                foreach (var collider in Manager.GetDynamicBoneColliders(currentAnimator, HumanBodyBones.RightHand))
-                {
-                    registratedRightColliders.Add(collider);
-
-                    if (TurbonesEx.isPresent) TurbonesEx.RegisterColliderForCollisionFeedback(collider.Pointer, 1);
-                }
-
-                allRegistratedColliders.Clear();
-                allRegistratedColliders.AddRange(registratedLeftColliders);
-                allRegistratedColliders.AddRange(registratedRightColliders);
-
                 leftWrist = currentAnimator.GetBoneTransform(HumanBodyBones.LeftHand);
                 rightWrist = currentAnimator.GetBoneTransform(HumanBodyBones.RightHand);
 
-                if (m_MeshHaptic && (m_MeshHapticPlayers || m_MeshHapticWorld)) MeshHapticEx.SetupAvatar(currentAnimator);
-
-                isCapable = registratedLeftColliders.Count != 0 && registratedRightColliders.Count != 0;
-
-                if (isCapable)
+                if (m_ColliderHaptic)
                 {
-                    localDynamicBones.Clear();
-                    foreach (var db in currentAvatarObject.GetDynamicBones())
+                    foreach (var collider in leftWrist.GetComponentsInChildren<DynamicBoneCollider>(true))
                     {
-                        localDynamicBones.Add(db);
+                        registratedLeftColliders.Add(collider);
 
-                        if (TurbonesEx.isPresent && m_IgnoreSelf) TurbonesEx.ExcludeBoneFromCollisionFeedback(db.Pointer);
+                        if (TurbonesEx.isPresent) TurbonesEx.RegisterColliderForCollisionFeedback(collider.Pointer, 0);
                     }
 
-                    MelonLogger.Msg($"This avatar is OK! Left collider count: {registratedLeftColliders.Count}. Right collider count: {registratedRightColliders.Count}");
+                    foreach (var collider in rightWrist.GetComponentsInChildren<DynamicBoneCollider>(true))
+                    {
+                        registratedRightColliders.Add(collider);
+
+                        if (TurbonesEx.isPresent) TurbonesEx.RegisterColliderForCollisionFeedback(collider.Pointer, 1);
+                    }
+
+                    isColliderHapticCapable = registratedLeftColliders.Count != 0 && registratedRightColliders.Count != 0;
+
+                    if (isColliderHapticCapable)
+                    {
+                        allRegistratedColliders.AddRange(registratedLeftColliders);
+                        allRegistratedColliders.AddRange(registratedRightColliders);
+
+                        foreach (var db in currentAvatarObject.GetDynamicBones())
+                        {
+                            localDynamicBones.Add(db);
+
+                            if (TurbonesEx.isPresent && m_ColliderHapticIgnoreSelf) TurbonesEx.ExcludeBoneFromCollisionFeedback(db.Pointer);
+                        }
+
+                        MelonLogger.Msg($"Collider Haptic: OK!(Left collider count: {registratedLeftColliders.Count}. Right collider count: {registratedRightColliders.Count})");
+                    }
+                    else FailedCapabilityResult("No hand colliders found on avatar.");
                 }
-                else CapabilityResult("No hand colliders found");
+
+                if (m_MeshHaptic && (m_MeshHapticPlayers || m_MeshHapticWorld))
+                {
+                    MeshHapticEx.SetupAvatar(currentAnimator);
+                    MelonLogger.Msg($"Mesh Haptic: OK!");
+                }
             }
             catch (Exception e)
             {
-                isCapable = false;
+                isColliderHapticCapable = false;
                 MelonLogger.Error($"Error when checking capability\n{e}");
             }
 
-            static void CapabilityResult(string reason)
+            static void FailedCapabilityResult(string reason)
             {
                 MelonLogger.Warning($"Capability Result: {reason}");
-                isCapable = false;
+                isColliderHapticCapable = false;
             }
         }
 
