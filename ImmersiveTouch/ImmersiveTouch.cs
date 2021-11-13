@@ -60,6 +60,7 @@ namespace ImmersiveTouch
         {
             TurbonesEx.SetIsPresent();
             MeshHapticEx.Setup();
+            OVRHapticEx.Setup();
 
             MelonPreferences.CreateCategory(GetType().Name, "Immersive Touch");
             MelonPreferences.CreateEntry(GetType().Name, "Enable", true, "Enable Immersive Touch");
@@ -170,18 +171,20 @@ namespace ImmersiveTouch
         {
             if (leftWrist != null && wrist == leftWrist && Vector3.Distance(previousLeftWristPosition, leftWrist.position) > hapticDistance)
             {
-                Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
+                //Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
+
+                OVRHapticEx.SendLeftHaptic((ushort)(Vector3.Distance(previousLeftWristPosition, leftWrist.position) * (m_HapticAmplitude * 100000)));
 
                 previousLeftWristPosition = leftWrist.position;
             }
 
             if (rightWrist != null && wrist == rightWrist && Vector3.Distance(previousRightWristPosition, rightWrist.position) > hapticDistance)
             {
-                Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
+                //Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
+
+                OVRHapticEx.SendRightHaptic((ushort)(Vector3.Distance(previousRightWristPosition, rightWrist.position) * (m_HapticAmplitude * 100000)));
 
                 previousRightWristPosition = rightWrist.position;
-
-                
             }
         }
 

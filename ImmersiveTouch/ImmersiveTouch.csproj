@@ -18,6 +18,9 @@
       <Reference Include="MelonLoader">
         <HintPath>..\..\..\MelonLoader\MelonLoader.dll</HintPath>
       </Reference>
+      <Reference Include="Oculus.VR">
+        <HintPath>..\..\..\MelonLoader\Managed\Oculus.VR.dll</HintPath>
+      </Reference>
       <Reference Include="Turbones">
         <HintPath>..\..\..\Mods\Turbones.dll</HintPath>
       </Reference>
