@@ -120,29 +120,20 @@ namespace ImmersiveTouch
 
         public static unsafe void OnCollide(IntPtr instance, IntPtr particlePosition, float particleRadius)
         {
-            void InvokeCollide() => Hooks.collideDelegate(instance, particlePosition, particleRadius);
-
-            try
+            if (!isColliderHapticCapable || (!allRegistratedColliders.HasPointer(instance)))
             {
-                if (!isColliderHapticCapable || (!allRegistratedColliders.HasPointer(instance)))
-                {
-                    InvokeCollide();
-                    return;
-                }
-
-                // Store the original particle position and invoke the original method.
-                Vector3 prevParticlePos = Marshal.PtrToStructure<Vector3>(particlePosition);
-                InvokeCollide();
-
-                // If the particle position was changed after the invoke, we have a collision!
-                if (prevParticlePos != Marshal.PtrToStructure<Vector3>(particlePosition))
-                {
-                    SendHaptic(instance);
-                }
+                Hooks.collideDelegate(instance, particlePosition, particleRadius);
+                return;
             }
-            catch
+
+            // Store the original particle position and invoke the original method.
+            Vector3 prevParticlePos = Marshal.PtrToStructure<Vector3>(particlePosition);
+            Hooks.collideDelegate(instance, particlePosition, particleRadius);
+
+            // If the particle position was changed after the invoke, we have a collision!
+            if (prevParticlePos != Marshal.PtrToStructure<Vector3>(particlePosition))
             {
-                InvokeCollide();
+                SendHaptic(instance);
             }
         }
 
@@ -189,6 +180,8 @@ namespace ImmersiveTouch
                 Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
 
                 previousRightWristPosition = rightWrist.position;
+
+                
             }
         }
 
