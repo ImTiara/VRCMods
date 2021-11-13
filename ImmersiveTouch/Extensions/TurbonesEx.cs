@@ -15,16 +15,6 @@ namespace ImmersiveTouch.Extensions
             var turbones = MelonHandler.Mods.FirstOrDefault(x => x.Info.Name == "Turbones");
             if (turbones == null) return;
 
-            switch(turbones.Info.Version)
-            {
-                case "1.0.0":
-                case "1.0.1":
-                case "1.0.2":
-                    MelonLogger.Error("You are using an outdated version of Turbones which is incompatible with\nImmersiveTouch.");
-                    MelonLogger.Error("Please update Turbones to the latest version.");
-                    return;
-            }
-
             isPresent = true;
         }
 
