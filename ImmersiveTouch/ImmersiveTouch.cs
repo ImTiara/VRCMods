@@ -17,6 +17,7 @@ namespace ImmersiveTouch
         public static HarmonyLib.Harmony harmony;
 
         private static bool m_Enable;
+        private static bool m_ExperimentalVibrations;
         private static bool m_ColliderHaptic;
         private static bool m_ColliderHapticIgnoreSelf;
         private static bool m_MeshHaptic;
@@ -64,6 +65,7 @@ namespace ImmersiveTouch
 
             MelonPreferences.CreateCategory(GetType().Name, "Immersive Touch");
             MelonPreferences.CreateEntry(GetType().Name, "Enable", true, "Enable Immersive Touch");
+            MelonPreferences.CreateEntry(GetType().Name, "ExperimentalVibrations", false, "Experimental Vibrations");
             MelonPreferences.CreateEntry(GetType().Name, "HapticAmplitude", 100.0f, "Haptic Amplitude (%)");
             MelonPreferences.CreateEntry(GetType().Name, "HapticSensitivity", 70.0f, "Haptic Sensitivity");
             MelonPreferences.CreateEntry(GetType().Name, "ColliderHaptic", true, "Collider Haptic");
@@ -80,6 +82,7 @@ namespace ImmersiveTouch
         public override void OnPreferencesSaved()
         {
             m_Enable = MelonPreferences.GetEntryValue<bool>(GetType().Name, "Enable");
+            m_ExperimentalVibrations = MelonPreferences.GetEntryValue<bool>(GetType().Name, "ExperimentalVibrations");
             m_HapticAmplitude = MelonPreferences.GetEntryValue<float>(GetType().Name, "HapticAmplitude") / 100.0f;
             m_HapticSensitivity = MelonPreferences.GetEntryValue<float>(GetType().Name, "HapticSensitivity") * 10;
             m_ColliderHaptic = MelonPreferences.GetEntryValue<bool>(GetType().Name, "ColliderHaptic");
@@ -154,14 +157,27 @@ namespace ImmersiveTouch
 
             if (registratedLeftColliders.HasPointer(collider) && leftWrist != null && Vector3.Distance(previousLeftWristPosition, leftWrist.position) > hapticDistance)
             {
-                Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
-
+                if (m_ExperimentalVibrations)
+                {
+                    OVRHapticEx.SendLeftHaptic((ushort)(Vector3.Distance(previousLeftWristPosition, leftWrist.position) * (m_HapticAmplitude * 100000)));
+                }
+                else
+                {
+                    Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
+                }
                 previousLeftWristPosition = leftWrist.position;
             }
 
             if (registratedRightColliders.HasPointer(collider) && rightWrist != null && Vector3.Distance(previousRightWristPosition, rightWrist.position) > hapticDistance)
             {
-                Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
+                if (m_ExperimentalVibrations)
+                {
+                    OVRHapticEx.SendRightHaptic((ushort)(Vector3.Distance(previousRightWristPosition, rightWrist.position) * (m_HapticAmplitude * 100000)));
+                }
+                else
+                {
+                    Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
+                }
 
                 previousRightWristPosition = rightWrist.position;
             }
@@ -171,18 +187,28 @@ namespace ImmersiveTouch
         {
             if (leftWrist != null && wrist == leftWrist && Vector3.Distance(previousLeftWristPosition, leftWrist.position) > hapticDistance)
             {
-                //Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
-
-                OVRHapticEx.SendLeftHaptic((ushort)(Vector3.Distance(previousLeftWristPosition, leftWrist.position) * (m_HapticAmplitude * 100000)));
+                if (m_ExperimentalVibrations)
+                {
+                    OVRHapticEx.SendLeftHaptic((ushort)(Vector3.Distance(previousLeftWristPosition, leftWrist.position) * (m_HapticAmplitude * 100000)));
+                }
+                else
+                {
+                    Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
+                }
 
                 previousLeftWristPosition = leftWrist.position;
             }
 
             if (rightWrist != null && wrist == rightWrist && Vector3.Distance(previousRightWristPosition, rightWrist.position) > hapticDistance)
             {
-                //Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
-
-                OVRHapticEx.SendRightHaptic((ushort)(Vector3.Distance(previousRightWristPosition, rightWrist.position) * (m_HapticAmplitude * 100000)));
+                if (m_ExperimentalVibrations)
+                {
+                    OVRHapticEx.SendRightHaptic((ushort)(Vector3.Distance(previousRightWristPosition, rightWrist.position) * (m_HapticAmplitude * 100000)));
+                }
+                else
+                {
+                    Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
+                }
 
                 previousRightWristPosition = rightWrist.position;
             }
