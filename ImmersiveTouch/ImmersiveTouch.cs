@@ -155,62 +155,79 @@ namespace ImmersiveTouch
         {
             if (m_ColliderHapticIgnoreSelf && currentDBI != IntPtr.Zero && localDynamicBones.HasPointer(currentDBI)) return;
 
-            if (registratedLeftColliders.HasPointer(collider) && leftWrist != null && Vector3.Distance(previousLeftWristPosition, leftWrist.position) > hapticDistance)
+            if (registratedLeftColliders.HasPointer(collider) && leftWrist != null)
             {
-                if (m_ExperimentalVibrations)
+                float dist = Vector3.Distance(previousLeftWristPosition, leftWrist.position);
+                if (dist > hapticDistance)
                 {
-                    OVRHapticEx.SendLeftHaptic((ushort)(Vector3.Distance(previousLeftWristPosition, leftWrist.position) * (m_HapticAmplitude * 100000)));
+                    if (m_ExperimentalVibrations)
+                    {
+                        OVRHapticEx.SendLeftHaptic((ushort)(dist * (m_HapticAmplitude * 100000)));
+                    }
+                    else
+                    {
+                        Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
+                    }
+
+                    previousLeftWristPosition = leftWrist.position;
                 }
-                else
-                {
-                    Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
-                }
-                previousLeftWristPosition = leftWrist.position;
             }
 
-            if (registratedRightColliders.HasPointer(collider) && rightWrist != null && Vector3.Distance(previousRightWristPosition, rightWrist.position) > hapticDistance)
+            if (registratedRightColliders.HasPointer(collider) && rightWrist != null)
             {
-                if (m_ExperimentalVibrations)
+                float dist = Vector3.Distance(previousRightWristPosition, rightWrist.position);
+                if (dist > hapticDistance)
                 {
-                    OVRHapticEx.SendRightHaptic((ushort)(Vector3.Distance(previousRightWristPosition, rightWrist.position) * (m_HapticAmplitude * 100000)));
-                }
-                else
-                {
-                    Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
-                }
+                    if (m_ExperimentalVibrations)
+                    {
+                        OVRHapticEx.SendRightHaptic((ushort)(dist * (m_HapticAmplitude * 100000)));
+                    }
+                    else
+                    {
+                        Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
+                    }
 
-                previousRightWristPosition = rightWrist.position;
+                    previousRightWristPosition = rightWrist.position;
+                }
             }
         }
 
         public static void SendHaptic(Transform wrist)
         {
-            if (leftWrist != null && wrist == leftWrist && Vector3.Distance(previousLeftWristPosition, leftWrist.position) > hapticDistance)
+            if (leftWrist != null && wrist == leftWrist)
             {
-                if (m_ExperimentalVibrations)
+                float dist = Vector3.Distance(previousLeftWristPosition, leftWrist.position);
+                if (dist > hapticDistance)
                 {
-                    OVRHapticEx.SendLeftHaptic((ushort)(Vector3.Distance(previousLeftWristPosition, leftWrist.position) * (m_HapticAmplitude * 100000)));
-                }
-                else
-                {
-                    Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
-                }
+                    if (m_ExperimentalVibrations)
+                    {
+                        OVRHapticEx.SendLeftHaptic((ushort)(dist * (m_HapticAmplitude * 100000)));
+                    }
+                    else
+                    {
+                        Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
+                    }
 
-                previousLeftWristPosition = leftWrist.position;
+                    previousLeftWristPosition = leftWrist.position;
+                }
             }
 
-            if (rightWrist != null && wrist == rightWrist && Vector3.Distance(previousRightWristPosition, rightWrist.position) > hapticDistance)
+            if (rightWrist != null && wrist == rightWrist)
             {
-                if (m_ExperimentalVibrations)
+                float dist = Vector3.Distance(previousRightWristPosition, rightWrist.position);
+                if (dist > hapticDistance)
                 {
-                    OVRHapticEx.SendRightHaptic((ushort)(Vector3.Distance(previousRightWristPosition, rightWrist.position) * (m_HapticAmplitude * 100000)));
-                }
-                else
-                {
-                    Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
-                }
+                    if (m_ExperimentalVibrations)
+                    {
+                        OVRHapticEx.SendRightHaptic((ushort)(dist * (m_HapticAmplitude * 100000)));
+                    }
+                    else
+                    {
+                        Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
+                    }
 
-                previousRightWristPosition = rightWrist.position;
+                    previousRightWristPosition = rightWrist.position;
+                }
             }
         }
 
@@ -233,6 +250,8 @@ namespace ImmersiveTouch
             MeshHapticEx.Destroy();
 
             if (!m_Enable || Manager.GetLocalVRCPlayer() == null) return;
+
+            if (!Manager.GetLocalVRCPlayer().prop_VRCPlayerApi_0.IsUserInVR()) return;
 
             try
             {

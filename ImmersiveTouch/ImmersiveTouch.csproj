@@ -33,6 +33,9 @@
       <Reference Include="UnityEngine.CoreModule">
         <HintPath>..\..\..\MelonLoader\Managed\UnityEngine.CoreModule.dll</HintPath>
       </Reference>
+      <Reference Include="UnityEngine.XRModule">
+        <HintPath>..\..\..\MelonLoader\Managed\UnityEngine.XRModule.dll</HintPath>
+      </Reference>
       <Reference Include="VRCSDKBase">
         <HintPath>..\..\..\MelonLoader\Managed\VRCSDKBase.dll</HintPath>
       </Reference>
