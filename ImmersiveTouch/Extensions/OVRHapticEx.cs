@@ -5,22 +5,18 @@ namespace ImmersiveTouch.Extensions
 {
     public class OVRHapticEx
     {
-        public static Array EVRButtonIds;
-        public static void Setup()
+        public static void SendLeftHaptic(ushort amplitude)
         {
-            EVRButtonIds = Enum.GetValues(typeof(EVRButtonId));
+            uint controller = OpenVR.System.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.LeftHand);
+
+            for (int i = 0; i < 21; i++) OpenVR.System.TriggerHapticPulse(controller, (uint)i, amplitude);
         }
 
-        public static void SendLeftHaptic(ushort amplitude = 1500)
+        public static void SendRightHaptic(ushort amplitude)
         {
-            uint leftController = OpenVR.System.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.LeftHand);
-            foreach (EVRButtonId id in EVRButtonIds) OpenVR.System.TriggerHapticPulse(leftController, (uint)id, amplitude);
-        }
+            uint controller = OpenVR.System.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.RightHand);
 
-        public static void SendRightHaptic(ushort amplitude = 1500)
-        {
-            uint leftController = OpenVR.System.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.RightHand);
-            foreach (EVRButtonId id in EVRButtonIds) OpenVR.System.TriggerHapticPulse(leftController, (uint)id, amplitude);
+            for (int i = 0; i < 21; i++) OpenVR.System.TriggerHapticPulse(controller, (uint)i, amplitude);
         }
     }
 }

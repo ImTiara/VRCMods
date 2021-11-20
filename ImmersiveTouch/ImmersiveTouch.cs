@@ -62,7 +62,6 @@ namespace ImmersiveTouch
         {
             TurbonesEx.SetIsPresent();
             MeshHapticEx.Setup();
-            OVRHapticEx.Setup();
 
             MelonPreferences.CreateCategory(GetType().Name, "Immersive Touch");
             MelonPreferences.CreateEntry(GetType().Name, "Enable", true, "Enable Immersive Touch");
