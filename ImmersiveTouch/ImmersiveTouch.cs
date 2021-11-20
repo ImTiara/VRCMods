@@ -162,7 +162,7 @@ namespace ImmersiveTouch
                 {
                     if (m_ExperimentalVibrations)
                     {
-                        OVRHapticEx.SendLeftHaptic((ushort)(dist * (m_HapticAmplitude * 100000)));
+                        OVRHapticEx.SendLeftHaptic((ushort)(dist * (m_HapticAmplitude * 75000)));
                     }
                     else
                     {
@@ -180,7 +180,7 @@ namespace ImmersiveTouch
                 {
                     if (m_ExperimentalVibrations)
                     {
-                        OVRHapticEx.SendRightHaptic((ushort)(dist * (m_HapticAmplitude * 100000)));
+                        OVRHapticEx.SendRightHaptic((ushort)(dist * (m_HapticAmplitude * 75000)));
                     }
                     else
                     {
@@ -201,7 +201,7 @@ namespace ImmersiveTouch
                 {
                     if (m_ExperimentalVibrations)
                     {
-                        OVRHapticEx.SendLeftHaptic((ushort)(dist * (m_HapticAmplitude * 100000)));
+                        OVRHapticEx.SendLeftHaptic((ushort)(dist * (m_HapticAmplitude * 75000)));
                     }
                     else
                     {
@@ -219,7 +219,7 @@ namespace ImmersiveTouch
                 {
                     if (m_ExperimentalVibrations)
                     {
-                        OVRHapticEx.SendRightHaptic((ushort)(dist * (m_HapticAmplitude * 100000)));
+                        OVRHapticEx.SendRightHaptic((ushort)(dist * (m_HapticAmplitude * 75000)));
                     }
                     else
                     {
