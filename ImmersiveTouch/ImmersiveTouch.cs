@@ -25,6 +25,7 @@ namespace ImmersiveTouch
         private static bool m_MeshHapticPlayers;
 
         private static float m_HapticAmplitude;
+        private static float m_ExperimentalHapticAmplitude;
         private static float m_HapticSensitivity;
 
         private static bool isColliderHapticCapable;
@@ -67,7 +68,7 @@ namespace ImmersiveTouch
             MelonPreferences.CreateEntry(GetType().Name, "Enable", true, "Enable Immersive Touch");
             MelonPreferences.CreateEntry(GetType().Name, "ExperimentalVibrations", false, "Experimental Vibrations");
             MelonPreferences.CreateEntry(GetType().Name, "HapticAmplitude", 100.0f, "Haptic Amplitude (%)");
-            MelonPreferences.CreateEntry(GetType().Name, "HapticSensitivity", 70.0f, "Haptic Sensitivity");
+            MelonPreferences.CreateEntry(GetType().Name, "HapticSensitivity", 60.0f, "Haptic Sensitivity");
             MelonPreferences.CreateEntry(GetType().Name, "ColliderHaptic", true, "Collider Haptic");
             MelonPreferences.CreateEntry(GetType().Name, "IgnoreSelf", false, "Ignore Self Collisions");
             MelonPreferences.CreateEntry(GetType().Name, "MeshHaptic", false, "Mesh Haptic");
@@ -92,6 +93,7 @@ namespace ImmersiveTouch
             m_MeshHapticPlayers = MelonPreferences.GetEntryValue<bool>(GetType().Name, "MeshHapticPlayers");
 
             MeshHapticEx.cullingMask = Manager.CalculateLayerMask(m_MeshHapticWorld, m_MeshHapticPlayers);
+            m_ExperimentalHapticAmplitude = m_HapticAmplitude * 300;
 
             SetupAvatar();
         }
@@ -158,36 +160,46 @@ namespace ImmersiveTouch
             if (registratedLeftColliders.HasPointer(collider) && leftWrist != null)
             {
                 float dist = Vector3.Distance(previousLeftWristPosition, leftWrist.position);
-                if (dist > hapticDistance)
+                if (m_ExperimentalVibrations)
                 {
-                    if (m_ExperimentalVibrations)
+                    if (dist > hapticDistance)
                     {
-                        OVRHapticEx.SendLeftHaptic((ushort)(dist * (m_HapticAmplitude * 75000)));
+                        OVRHapticEx.SendLeftHaptic((ushort)(dist / hapticDistance * m_ExperimentalHapticAmplitude));
+
+                        previousLeftWristPosition = leftWrist.position;
                     }
-                    else
+                }
+                else
+                {
+                    if (dist > hapticDistance)
                     {
                         Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
-                    }
 
-                    previousLeftWristPosition = leftWrist.position;
+                        previousLeftWristPosition = leftWrist.position;
+                    }
                 }
             }
 
             if (registratedRightColliders.HasPointer(collider) && rightWrist != null)
             {
                 float dist = Vector3.Distance(previousRightWristPosition, rightWrist.position);
-                if (dist > hapticDistance)
+                if (m_ExperimentalVibrations)
                 {
-                    if (m_ExperimentalVibrations)
+                    if (dist > hapticDistance)
                     {
-                        OVRHapticEx.SendRightHaptic((ushort)(dist * (m_HapticAmplitude * 75000)));
+                        OVRHapticEx.SendRightHaptic((ushort)(dist / hapticDistance * m_ExperimentalHapticAmplitude));
+
+                        previousRightWristPosition = rightWrist.position;
                     }
-                    else
+                }
+                else
+                {
+                    if (dist > hapticDistance)
                     {
                         Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
-                    }
 
-                    previousRightWristPosition = rightWrist.position;
+                        previousRightWristPosition = rightWrist.position;
+                    }
                 }
             }
         }
@@ -197,36 +209,46 @@ namespace ImmersiveTouch
             if (leftWrist != null && wrist == leftWrist)
             {
                 float dist = Vector3.Distance(previousLeftWristPosition, leftWrist.position);
-                if (dist > hapticDistance)
+                if (m_ExperimentalVibrations)
                 {
-                    if (m_ExperimentalVibrations)
+                    if (dist > hapticDistance)
                     {
-                        OVRHapticEx.SendLeftHaptic((ushort)(dist * (m_HapticAmplitude * 75000)));
+                        OVRHapticEx.SendLeftHaptic((ushort)(dist / hapticDistance * m_ExperimentalHapticAmplitude));
+
+                        previousLeftWristPosition = leftWrist.position;
                     }
-                    else
+                }
+                else
+                {
+                    if (dist > hapticDistance)
                     {
                         Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
-                    }
 
-                    previousLeftWristPosition = leftWrist.position;
+                        previousLeftWristPosition = leftWrist.position;
+                    }
                 }
             }
 
             if (rightWrist != null && wrist == rightWrist)
             {
                 float dist = Vector3.Distance(previousRightWristPosition, rightWrist.position);
-                if (dist > hapticDistance)
+                if (m_ExperimentalVibrations)
                 {
-                    if (m_ExperimentalVibrations)
+                    if (dist > hapticDistance)
                     {
-                        OVRHapticEx.SendRightHaptic((ushort)(dist * (m_HapticAmplitude * 75000)));
+                        OVRHapticEx.SendRightHaptic((ushort)(dist / hapticDistance * m_ExperimentalHapticAmplitude));
+
+                        previousRightWristPosition = rightWrist.position;
                     }
-                    else
+                }
+                else
+                {
+                    if (dist > hapticDistance)
                     {
                         Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
-                    }
 
-                    previousRightWristPosition = rightWrist.position;
+                        previousRightWristPosition = rightWrist.position;
+                    }
                 }
             }
         }
