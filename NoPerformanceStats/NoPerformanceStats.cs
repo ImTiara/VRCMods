@@ -31,9 +31,14 @@ namespace NoPerformanceStats
 
         public override void OnPreferencesSaved()
         {
-            allowPerformanceScanner = !MelonPreferences.GetEntryValue<bool>(GetType().Name, "DisablePerformanceStats");
+            bool disablePerformanceStats = MelonPreferences.GetEntryValue<bool>(GetType().Name, "DisablePerformanceStats");
 
-            MelonLogger.Msg($"Performance stats will now be {(allowPerformanceScanner ? "shown" : "hidden and avatars should load quicker")}.");
+            if (disablePerformanceStats == allowPerformanceScanner)
+            {
+                allowPerformanceScanner = !disablePerformanceStats;
+
+                MelonLogger.Msg($"Performance stats will now be {(allowPerformanceScanner ? "shown" : "hidden and avatars should load quicker")}.");
+            }
         }
 
         private void ApplyPatches()
