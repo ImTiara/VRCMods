@@ -92,7 +92,7 @@ namespace ImmersiveTouch
             m_MeshHapticPlayers = MelonPreferences.GetEntryValue<bool>(GetType().Name, "MeshHapticPlayers");
 
             MeshHapticEx.cullingMask = Manager.CalculateLayerMask(m_MeshHapticWorld, m_MeshHapticPlayers);
-            m_ExperimentalHapticAmplitude = m_HapticAmplitude * 300;
+            m_ExperimentalHapticAmplitude = m_HapticAmplitude * 250;
 
             SetupAvatar();
         }
