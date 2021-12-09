@@ -274,8 +274,6 @@ namespace ImmersiveTouch
 
             if (!m_Enable || Manager.GetLocalVRCPlayer() == null) return;
 
-            if (!Manager.GetLocalVRCPlayer().prop_VRCPlayerApi_0.IsUserInVR()) return;
-
             try
             {
                 if (currentAnimator == null || !currentAnimator.isHuman)
