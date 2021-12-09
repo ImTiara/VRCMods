@@ -259,16 +259,16 @@ namespace ImmersiveTouch
             isColliderHapticCapable = false;
             currentDBI = IntPtr.Zero;
 
-            allRegistratedColliders.Clear();
-            registratedLeftColliders.Clear();
-            registratedRightColliders.Clear();
-            localDynamicBones.Clear();
-
             if (TurbonesEx.isPresent)
             {
                 TurbonesEx.UnregisterCollisionFeedbackColliders();
                 TurbonesEx.UnregisterExcludedBonesFromCollisionFeedback();
             }
+
+            allRegistratedColliders.Clear();
+            registratedLeftColliders.Clear();
+            registratedRightColliders.Clear();
+            localDynamicBones.Clear();
 
             MeshHapticEx.Destroy();
 
