@@ -11,6 +11,8 @@ namespace GestureIndicator
 {
     public class GestureIndicator : MelonMod
     {
+        public static MelonLogger.Instance Logger;
+
         private bool m_Enable;
         private Color m_LeftTextColor = Color.cyan;
         private Color m_RightTextColor = Color.cyan;
@@ -29,10 +31,9 @@ namespace GestureIndicator
         private DateTime rightTime;
 
         public override void OnApplicationStart()
-            => MelonCoroutines.Start(UiManagerInitializer());
-
-        public void OnUiManagerInit()
         {
+            Logger = new MelonLogger.Instance(GetType().Name);
+
             MelonPreferences.CreateCategory(GetType().Name, "Gesture Indicator");
             MelonPreferences.CreateEntry(GetType().Name, "Enable", true, "Enable Gesture Indicator");
             MelonPreferences.CreateEntry(GetType().Name, "TextOpacity", 85f, "Text Opacity (%)");
@@ -42,6 +43,11 @@ namespace GestureIndicator
             MelonPreferences.CreateEntry(GetType().Name, "TextYPosition", 1.0f, "Text Y Position");
             MelonPreferences.CreateEntry(GetType().Name, "HideAfterSeconds", 0.0f, "Hide After Seconds (0 = never)");
 
+            MelonCoroutines.Start(UiManagerInitializer());
+        }
+
+        public void OnUiManagerInit()
+        {
             CreateIndicators();
 
             OnPreferencesSaved();
@@ -76,7 +82,7 @@ namespace GestureIndicator
                             ShowStaticGestures();
                     }
                 }
-                catch (Exception e) { MelonLogger.Error("Error checking gestures: " + e); }
+                catch (Exception e) { Logger.Error("Error checking gestures: " + e); }
 
                 yield return new WaitForSeconds(.1f);
             }

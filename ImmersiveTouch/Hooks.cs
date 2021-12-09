@@ -32,7 +32,7 @@ namespace ImmersiveTouch
                 MelonUtils.NativeHookAttach((IntPtr)(&original), typeof(ImmersiveTouch).GetMethod(nameof(ImmersiveTouch.OnUpdateParticles), BindingFlags.Static | BindingFlags.Public)!.MethodHandle.GetFunctionPointer());
                 updateParticlesDelegate = Marshal.GetDelegateForFunctionPointer<UpdateParticlesDelegate>(original);
             }
-            catch (Exception e) { MelonLogger.Error($"Failed to patch: OnUpdateParticles\n{e}"); }
+            catch (Exception e) { ImmersiveTouch.Logger.Error($"Failed to patch: OnUpdateParticles\n{e}"); }
 
             try
             {
@@ -40,7 +40,7 @@ namespace ImmersiveTouch
                 MelonUtils.NativeHookAttach((IntPtr)(&original), typeof(ImmersiveTouch).GetMethod(nameof(ImmersiveTouch.OnCollide), BindingFlags.Static | BindingFlags.Public)!.MethodHandle.GetFunctionPointer());
                 collideDelegate = Marshal.GetDelegateForFunctionPointer<CollideDelegate>(original);
             }
-            catch (Exception e) { MelonLogger.Error($"Failed to patch: OnCollide\n{e}"); }
+            catch (Exception e) { ImmersiveTouch.Logger.Error($"Failed to patch: OnCollide\n{e}"); }
         }
 
         public static void ApplyHarmonyHooks()

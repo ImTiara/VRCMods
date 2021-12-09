@@ -14,6 +14,7 @@ namespace ImmersiveTouch
 {
     public class ImmersiveTouch : MelonMod
     {
+        public static MelonLogger.Instance Logger;
         public static HarmonyLib.Harmony harmony;
 
         private static bool m_Enable;
@@ -53,15 +54,8 @@ namespace ImmersiveTouch
 
         public override void OnApplicationStart()
         {
+            Logger = new MelonLogger.Instance(GetType().Name);
             harmony = HarmonyInstance;
-
-            MelonCoroutines.Start(UiManagerInitializer());
-        }
-
-        public void OnUiManagerInit()
-        {
-            TurbonesEx.SetIsPresent();
-            MeshHapticEx.Setup();
 
             MelonPreferences.CreateCategory(GetType().Name, "Immersive Touch");
             MelonPreferences.CreateEntry(GetType().Name, "Enable", true, "Enable Immersive Touch");
@@ -73,6 +67,14 @@ namespace ImmersiveTouch
             MelonPreferences.CreateEntry(GetType().Name, "MeshHaptic", false, "Mesh Haptic");
             MelonPreferences.CreateEntry(GetType().Name, "MeshHapticWorld", true, "Mesh Haptic World");
             MelonPreferences.CreateEntry(GetType().Name, "MeshHapticPlayers", true, "Mesh Haptic Players");
+
+            MelonCoroutines.Start(UiManagerInitializer());
+        }
+
+        public void OnUiManagerInit()
+        {
+            TurbonesEx.SetIsPresent();
+            MeshHapticEx.Setup();
 
             OnPreferencesSaved();
 
@@ -111,7 +113,7 @@ namespace ImmersiveTouch
             }
             catch (Exception e)
             {
-                MelonLogger.Error($"Error checking when avatar changed:\n{e}");
+                Logger.Error($"Error checking when avatar changed:\n{e}");
             }
         }
 
@@ -317,7 +319,7 @@ namespace ImmersiveTouch
                             if (TurbonesEx.isPresent && m_ColliderHapticIgnoreSelf) TurbonesEx.ExcludeBoneFromCollisionFeedback(db.Pointer);
                         }
 
-                        MelonLogger.Msg($"Collider Haptic: OK!(Left collider count: {registratedLeftColliders.Count}. Right collider count: {registratedRightColliders.Count})");
+                        Logger.Msg($"Collider Haptic: OK!(Left collider count: {registratedLeftColliders.Count}. Right collider count: {registratedRightColliders.Count})");
                     }
                     else FailedCapabilityResult("No hand colliders found on avatar.");
                 }
@@ -325,18 +327,18 @@ namespace ImmersiveTouch
                 if (m_MeshHaptic && (m_MeshHapticPlayers || m_MeshHapticWorld))
                 {
                     MeshHapticEx.SetupAvatar(currentAnimator);
-                    MelonLogger.Msg($"Mesh Haptic: OK!");
+                    Logger.Msg($"Mesh Haptic: OK!");
                 }
             }
             catch (Exception e)
             {
                 isColliderHapticCapable = false;
-                MelonLogger.Error($"Error when checking capability\n{e}");
+                Logger.Error($"Error when checking capability\n{e}");
             }
 
             static void FailedCapabilityResult(string reason)
             {
-                MelonLogger.Warning($"Capability Result: {reason}");
+                Logger.Warning($"Capability Result: {reason}");
                 isColliderHapticCapable = false;
             }
         }

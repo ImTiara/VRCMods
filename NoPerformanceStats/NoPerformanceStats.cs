@@ -12,10 +12,14 @@ namespace NoPerformanceStats
 {
     public class NoPerformanceStats : MelonMod
     {
+        public static MelonLogger.Instance Logger;
+
         private static bool allowPerformanceScanner;
 
         public override void OnApplicationStart()
         {
+            Logger = new MelonLogger.Instance(GetType().Name);
+
             MelonPreferences.CreateCategory(GetType().Name, "No Performance Stats");
             MelonPreferences.CreateEntry(GetType().Name, "DisablePerformanceStats", true, "Disable Performance Stats");
 
@@ -37,7 +41,7 @@ namespace NoPerformanceStats
             {
                 allowPerformanceScanner = !disablePerformanceStats;
 
-                MelonLogger.Msg($"Performance stats will now be {(allowPerformanceScanner ? "shown" : "hidden and avatars should load quicker")}.");
+                Logger.Msg($"Performance stats will now be {(allowPerformanceScanner ? "shown" : "hidden and avatars should load quicker")}.");
             }
         }
 
@@ -56,7 +60,7 @@ namespace NoPerformanceStats
                     BindingFlags.NonPublic | BindingFlags.Static
                 );
             }
-            catch (Exception e) { MelonLogger.Error("Failed to patch Performance Scanner: " + e); }
+            catch (Exception e) { Logger.Error("Failed to patch Performance Scanner: " + e); }
         }
 
         private static bool CalculatePerformance()
