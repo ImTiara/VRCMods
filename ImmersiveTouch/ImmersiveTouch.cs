@@ -322,11 +322,7 @@ namespace ImmersiveTouch
                     else FailedCapabilityResult("No hand colliders found on avatar.");
                 }
 
-                if (m_MeshHaptic && (m_MeshHapticPlayers || m_MeshHapticWorld))
-                {
-                    MeshHapticEx.SetupAvatar(currentAnimator);
-                    Logger.Msg($"Mesh Haptic: OK!");
-                }
+                if (m_MeshHaptic && (m_MeshHapticPlayers || m_MeshHapticWorld)) MeshHapticEx.SetupAvatar(currentAnimator);
             }
             catch (Exception e)
             {

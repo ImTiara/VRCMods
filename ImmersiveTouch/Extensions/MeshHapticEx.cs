@@ -67,9 +67,19 @@ namespace ImmersiveTouch.Extensions
             Transform left = new GameObject("ImmersiveTouch_Left_Camera").transform;
             leftObject = left.gameObject;
 
-            left.transform.parent = animator.GetBoneTransform(HumanBodyBones.LeftMiddleProximal);
-            left.localPosition = Vector3.zero;
-            left.transform.parent = animator.GetBoneTransform(HumanBodyBones.LeftHand);
+            Transform LeftMiddleProximal = animator.GetBoneTransform(HumanBodyBones.LeftMiddleProximal);
+            if (LeftMiddleProximal != null)
+            {
+                left.transform.parent = LeftMiddleProximal;
+                left.localPosition = Vector3.zero;
+                left.transform.parent = animator.GetBoneTransform(HumanBodyBones.LeftHand);
+            }
+            else
+            {
+                ImmersiveTouch.Logger.Warning($"Mesh Haptic Setup: Finger 'Left Middle Proximal' is missing on this avatar. This may cause the haptic area to be inaccurate!");
+                left.transform.parent = animator.GetBoneTransform(HumanBodyBones.LeftHand);
+                left.localPosition = Vector3.zero;
+            }
             left.localEulerAngles = new Vector3(0, 180, 0);
 
             Camera leftCamera = SetupCamera(left.gameObject);
@@ -83,9 +93,19 @@ namespace ImmersiveTouch.Extensions
             Transform right = new GameObject("ImmersiveTouch_Right_Camera").transform;
             rightObject = right.gameObject;
 
-            right.transform.parent = animator.GetBoneTransform(HumanBodyBones.RightMiddleProximal);
-            right.localPosition = Vector3.zero;
-            right.transform.parent = animator.GetBoneTransform(HumanBodyBones.RightHand);
+            Transform RightMiddleProximal = animator.GetBoneTransform(HumanBodyBones.RightMiddleProximal);
+            if (RightMiddleProximal != null)
+            {
+                right.transform.parent = RightMiddleProximal;
+                right.localPosition = Vector3.zero;
+                right.transform.parent = animator.GetBoneTransform(HumanBodyBones.RightHand);
+            }
+            else
+            {
+                ImmersiveTouch.Logger.Warning($"Mesh Haptic Setup: Finger 'Right Middle Proximal' is missing on this avatar. This may cause the haptic area to be inaccurate!");
+                right.transform.parent = animator.GetBoneTransform(HumanBodyBones.RightHand);
+                right.localPosition = Vector3.zero;
+            }
             right.localEulerAngles = new Vector3(0, 180, 0);
 
             Camera rightCamera = SetupCamera(right.gameObject);
@@ -94,6 +114,8 @@ namespace ImmersiveTouch.Extensions
             var rightCameraHaptic = right.gameObject.AddComponent<MeshHapticEx>();
             rightCameraHaptic.wrist = right.transform.parent;
             #endregion
+
+            ImmersiveTouch.Logger.Msg($"Mesh Haptic: OK!");
 
             static Camera SetupCamera(GameObject _gameObject)
             {
