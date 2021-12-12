@@ -3,7 +3,7 @@
         <TargetFramework>net472</TargetFramework>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>8.0</LangVersion>
-        <Version>1.0.6</Version>
+        <Version>1.0.7</Version>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
       <OutputPath>..\Output\</OutputPath>
@@ -33,6 +33,9 @@
       <Reference Include="UnityEngine.CoreModule">
         <HintPath>..\..\..\MelonLoader\Managed\UnityEngine.CoreModule.dll</HintPath>
       </Reference>
+      <Reference Include="UnityEngine.ImageConversionModule">
+        <HintPath>..\..\..\MelonLoader\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+      </Reference>
       <Reference Include="UnityEngine.TextRenderingModule">
         <HintPath>..\..\..\MelonLoader\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
       </Reference>
@@ -49,4 +52,7 @@
         <HintPath>..\..\..\MelonLoader\Managed\VRCSDKBase.dll</HintPath>
       </Reference>
     </ItemGroup>
+	<ItemGroup>
+	    <EmbeddedResource Include="Images\*.png" />
+	</ItemGroup>
 </Project>
