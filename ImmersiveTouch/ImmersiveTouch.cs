@@ -22,8 +22,8 @@ namespace ImmersiveTouch
         private static bool m_ColliderHaptic;
         private static bool m_ColliderHapticIgnoreSelf;
         private static bool m_MeshHaptic;
-        private static bool m_MeshHapticWorld;
-        private static bool m_MeshHapticPlayers;
+        public static bool m_MeshHapticWorld;
+        public static bool m_MeshHapticPlayers;
 
         private static float m_HapticAmplitude;
         private static float m_ExperimentalHapticAmplitude;
@@ -287,6 +287,14 @@ namespace ImmersiveTouch
                 leftWrist = currentAnimator.GetBoneTransform(HumanBodyBones.LeftHand);
                 rightWrist = currentAnimator.GetBoneTransform(HumanBodyBones.RightHand);
 
+                if (leftWrist == null || rightWrist == null)
+                {
+                    FailedCapabilityResult("Left or Right wrist are not mapped on this avatar.");
+                    return;
+                }
+
+                Logger.Msg("Avatar Capability Result:");
+
                 if (m_ColliderHaptic)
                 {
                     foreach (var collider in leftWrist.GetComponentsInChildren<DynamicBoneCollider>(true))
@@ -317,12 +325,24 @@ namespace ImmersiveTouch
                             if (TurbonesEx.isPresent && m_ColliderHapticIgnoreSelf) TurbonesEx.ExcludeBoneFromCollisionFeedback(db.Pointer);
                         }
 
-                        Logger.Msg($"Collider Haptic: OK!(Left collider count: {registratedLeftColliders.Count}. Right collider count: {registratedRightColliders.Count})");
+                        Logger.Msg("-------------------------");
+
+                        Logger.Msg($"OK Collider Haptic! (Left collider count: {registratedLeftColliders.Count}. Right collider count: {registratedRightColliders.Count})");
+                        Logger.Msg($"Collider Haptic is ignoring self collisions: {m_ColliderHapticIgnoreSelf}");
+                        Logger.Msg($"Collider Haptic is using Turbones: {TurbonesEx.isPresent}");
                     }
-                    else FailedCapabilityResult("No hand colliders found on avatar.");
+                    else Logger.Warning("Failed Collider Haptic: No hand colliders found on avatar.");
                 }
 
                 if (m_MeshHaptic && (m_MeshHapticPlayers || m_MeshHapticWorld)) MeshHapticEx.SetupAvatar(currentAnimator);
+
+                Logger.Msg("-------------------------");
+
+                Logger.Msg($"Haptic Amplitude: {m_HapticAmplitude * 100}%");
+                Logger.Msg($"Haptic Sensitivity: {m_HapticSensitivity / 10.0f}");
+                Logger.Msg($"Using Experimental Vibrations: {m_ExperimentalVibrations}");
+
+                Logger.Msg("-------------------------");
             }
             catch (Exception e)
             {
@@ -332,7 +352,7 @@ namespace ImmersiveTouch
 
             static void FailedCapabilityResult(string reason)
             {
-                Logger.Warning($"Capability Result: {reason}");
+                Logger.Warning($"Failed Capability Result: {reason}");
                 isColliderHapticCapable = false;
             }
         }
