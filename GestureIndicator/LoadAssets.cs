@@ -41,7 +41,7 @@ namespace GestureIndicator
                 s.hideFlags |= HideFlags.DontUnloadUnusedAsset;
                 return s;
             }
-            catch (System.Exception ex) { MelonLogger.Error("Failed to load image: " + imageName + "\n" + ex.ToString()); return null; }
+            catch (System.Exception ex) { GestureIndicator.Logger.Error("Failed to load image: " + imageName + "\n" + ex.ToString()); return null; }
         }
     }
 }
