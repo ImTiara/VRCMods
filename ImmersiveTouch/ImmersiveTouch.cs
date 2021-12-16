@@ -7,7 +7,7 @@ using UnityEngine;
 using VRC.SDKBase;
 using ImmersiveTouch.Extensions;
 
-[assembly: MelonInfo(typeof(ImmersiveTouch.ImmersiveTouch), "ImmersiveTouch", "1.1.2", "ImTiara", "https://github.com/ImTiara/VRCMods")]
+[assembly: MelonInfo(typeof(ImmersiveTouch.ImmersiveTouch), "ImmersiveTouch", "1.1.3", "ImTiara", "https://github.com/ImTiara/VRCMods")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace ImmersiveTouch
