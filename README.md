@@ -23,5 +23,5 @@ Please be aware that this will cause issues with safety features such as "perfor
 
 # _DragFix_
 - DragFix forces the "UI Drag Threshold" (the distance you need to move your cursor before it actually starts dragging) to match your current avatar's scale.
-This fixes the issue where you are almost / fully unable to scroll menus while using a tiny avatar, or making the new QuickMenu easier to scroll in.
+This fixes the issues where scrolling for example in the new QuickMenu can be difficult depending on your avatar size.
 DragFix also comes with individual settings for Desktop/VR drag thresholds (a value such as 0.1 is recommended for Desktop and a value of 1.0 for VR).
