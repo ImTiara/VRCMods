@@ -29,6 +29,7 @@ namespace NoPerformanceStats
             {
                 try
                 {
+                    //https://melonwiki.xyz/#/modders/xrefscanning?id=example
                     var calculatePerformanceMethod = typeof(PerformanceScannerSet).GetMethods()
                         .First(mi => mi.Name.StartsWith("Method_Public_IEnumerator_GameObject_AvatarPerformanceStats_MulticastDelegateNPublicSealedBoCoUnique_") && XrefScanner.UsedBy(mi)
                             .Any(instance => instance.Type == XrefType.Method && instance.TryResolve() != null && instance.TryResolve().Name == "Method_Private_Virtual_Final_New_Boolean_3"));
