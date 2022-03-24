@@ -1,9 +1,11 @@
 ﻿using HarmonyLib;
 using MelonLoader;
 using System;
+using System.Linq;
+using UnhollowerRuntimeLib.XrefScans;
 using VRC.SDKBase.Validation.Performance;
 
-[assembly: MelonInfo(typeof(NoPerformanceStats.NoPerformanceStats), "NoPerformanceStats", "1.0.7", "ImTiara", "https://github.com/ImTiara/VRCMods")]
+[assembly: MelonInfo(typeof(NoPerformanceStats.NoPerformanceStats), "NoPerformanceStats", "1.0.8", "ImTiara", "https://github.com/ImTiara/VRCMods")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace NoPerformanceStats
@@ -25,8 +27,15 @@ namespace NoPerformanceStats
 
             try
             {
-                HarmonyInstance.Patch(typeof(PerformanceScannerSet).GetMethod(nameof(PerformanceScannerSet.Method_Public_IEnumerator_GameObject_AvatarPerformanceStats_MulticastDelegateNPublicSealedBoCoUnique_0)),
-                    new HarmonyMethod(typeof(NoPerformanceStats).GetMethod("CalculatePerformance")));
+                try
+                {
+                    var calculatePerformanceMethod = typeof(PerformanceScannerSet).GetMethods()
+                        .First(mi => mi.Name.StartsWith("Method_Public_IEnumerator_GameObject_AvatarPerformanceStats_MulticastDelegateNPublicSealedBoCoUnique_") && XrefScanner.UsedBy(mi)
+                            .Any(instance => instance.Type == XrefType.Method && instance.TryResolve() != null && instance.TryResolve().Name == "Method_Private_Virtual_Final_New_Boolean_3"));
+
+                    HarmonyInstance.Patch(calculatePerformanceMethod, new HarmonyMethod(typeof(NoPerformanceStats).GetMethod(nameof(CalculatePerformance))));
+                }
+                catch (Exception e) { Logger.Error("Failed to find the method using reflections: " + e); }
             }
             catch (Exception e) { Logger.Error("Failed to patch Performance Scanner: " + e); }
         }
