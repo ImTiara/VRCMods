@@ -27,16 +27,7 @@ namespace NoPerformanceStats
 
             try
             {
-                try
-                {
-                    //https://melonwiki.xyz/#/modders/xrefscanning?id=example
-                    var calculatePerformanceMethod = typeof(PerformanceScannerSet).GetMethods()
-                        .First(mi => mi.Name.StartsWith("Method_Public_IEnumerator_GameObject_AvatarPerformanceStats_MulticastDelegateNPublicSealedBoCoUnique_") && XrefScanner.UsedBy(mi)
-                            .Any(instance => instance.Type == XrefType.Method && instance.TryResolve() != null && instance.TryResolve().Name == "Method_Private_Virtual_Final_New_Boolean_3"));
-
-                    HarmonyInstance.Patch(calculatePerformanceMethod, new HarmonyMethod(typeof(NoPerformanceStats).GetMethod(nameof(CalculatePerformance))));
-                }
-                catch (Exception e) { Logger.Error("Failed to find the method using reflections: " + e); }
+                HarmonyInstance.Patch(typeof(AvatarPerformance).GetMethod(nameof(AvatarPerformance.GetPerformanceScannerSet)), new HarmonyMethod(typeof(NoPerformanceStats).GetMethod(nameof(GetPerformanceScannerSetPatch))));
             }
             catch (Exception e) { Logger.Error("Failed to patch Performance Scanner: " + e); }
         }
@@ -53,7 +44,7 @@ namespace NoPerformanceStats
             }
         }
 
-        public static bool CalculatePerformance()
+        public static bool GetPerformanceScannerSetPatch()
             => allowPerformanceScanner;
     }
 }
