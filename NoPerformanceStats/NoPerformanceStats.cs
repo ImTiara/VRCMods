@@ -1,8 +1,6 @@
 ﻿using HarmonyLib;
 using MelonLoader;
 using System;
-using System.Linq;
-using UnhollowerRuntimeLib.XrefScans;
 using VRC.SDKBase.Validation.Performance;
 
 [assembly: MelonInfo(typeof(NoPerformanceStats.NoPerformanceStats), "NoPerformanceStats", "1.0.8", "ImTiara", "https://github.com/ImTiara/VRCMods")]
