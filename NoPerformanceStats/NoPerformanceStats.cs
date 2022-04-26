@@ -1,9 +1,11 @@
 ﻿using HarmonyLib;
 using MelonLoader;
 using System;
+using System.Linq;
+using UnhollowerRuntimeLib.XrefScans;
 using VRC.SDKBase.Validation.Performance;
 
-[assembly: MelonInfo(typeof(NoPerformanceStats.NoPerformanceStats), "NoPerformanceStats", "1.0.7", "ImTiara", "https://github.com/ImTiara/VRCMods")]
+[assembly: MelonInfo(typeof(NoPerformanceStats.NoPerformanceStats), "NoPerformanceStats", "1.0.8", "ImTiara", "https://github.com/ImTiara/VRCMods")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace NoPerformanceStats
@@ -25,8 +27,7 @@ namespace NoPerformanceStats
 
             try
             {
-                HarmonyInstance.Patch(typeof(PerformanceScannerSet).GetMethod(nameof(PerformanceScannerSet.Method_Public_IEnumerator_GameObject_AvatarPerformanceStats_MulticastDelegateNPublicSealedBoCoUnique_0)),
-                    new HarmonyMethod(typeof(NoPerformanceStats).GetMethod("CalculatePerformance")));
+                HarmonyInstance.Patch(typeof(AvatarPerformance).GetMethod(nameof(AvatarPerformance.GetPerformanceScannerSet)), new HarmonyMethod(typeof(NoPerformanceStats).GetMethod(nameof(GetPerformanceScannerSetPatch))));
             }
             catch (Exception e) { Logger.Error("Failed to patch Performance Scanner: " + e); }
         }
@@ -43,7 +44,7 @@ namespace NoPerformanceStats
             }
         }
 
-        public static bool CalculatePerformance()
+        public static bool GetPerformanceScannerSetPatch()
             => allowPerformanceScanner;
     }
 }
