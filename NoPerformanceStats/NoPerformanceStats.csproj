@@ -9,6 +9,9 @@
       <OutputPath>..\Output\</OutputPath>
     </PropertyGroup>
     <ItemGroup>
+      <Reference Include="0Harmony">
+        <HintPath>..\..\..\MelonLoader\0Harmony.dll</HintPath>
+      </Reference>
       <Reference Include="Assembly-CSharp">
         <HintPath>..\..\..\MelonLoader\Managed\Assembly-CSharp.dll</HintPath>
       </Reference>
