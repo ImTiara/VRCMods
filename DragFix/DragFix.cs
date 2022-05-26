@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using UnityEngine;
 
-[assembly: MelonInfo(typeof(DragFix.DragFix), "DragFix", "1.0.0", "ImTiara", "https://github.com/ImTiara/VRCMods")]
+[assembly: MelonInfo(typeof(DragFix.DragFix), "DragFix", "1.0.1", "ImTiara", "https://github.com/ImTiara/VRCMods")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace DragFix
