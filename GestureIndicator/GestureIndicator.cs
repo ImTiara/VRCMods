@@ -5,7 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(GestureIndicator.GestureIndicator), "GestureIndicator", "1.0.7", "ImTiara", "https://github.com/ImTiara/VRCMods")]
+[assembly: MelonInfo(typeof(GestureIndicator.GestureIndicator), "GestureIndicator", "1.0.8", "ImTiara", "https://github.com/ImTiara/VRCMods")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace GestureIndicator
@@ -212,9 +212,9 @@ namespace GestureIndicator
 
         private void CreateIndicators()
         {
-            Transform hud = Manager.GetVRCUiManager().transform.Find("UnscaledUI/HudContent");
+            Transform hud = Manager.GetVRCUiManager().transform.Find("UnscaledUI/HudContent_Old");
             GameObject textTemplate = Manager.GetQuickMenu().transform.Find("Container/Window/QMNotificationsArea/DebugInfoPanel/Panel/Text_FPS").gameObject;
-            GameObject iconTemplate = Manager.GetVRCUiManager().transform.Find("UnscaledUI/HudContent/Hud/GestureToggleParent/GesturesON").gameObject;
+            GameObject iconTemplate = Manager.GetVRCUiManager().transform.Find("UnscaledUI/HudContent_Old/Hud/GestureToggleParent/GesturesON").gameObject;
 
             leftGestureText = UnityEngine.Object.Instantiate(textTemplate, hud, true).GetComponent<TextMeshProUGUI>();
             UnityEngine.Object.Destroy(leftGestureText.GetComponent<TextBinding>());
