@@ -2,10 +2,10 @@
 using MelonLoader;
 using OVR.OpenVR;
 using System;
-using System.Linq;
 using UnityEngine;
+using VRC.Core;
 
-[assembly: MelonInfo(typeof(DragFix.DragFix), "DragFix", "1.0.1", "ImTiara", "https://github.com/ImTiara/VRCMods")]
+[assembly: MelonInfo(typeof(DragFix.DragFix), "DragFix", "1.0.2", "ImTiara", "https://github.com/ImTiara/VRCMods")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace DragFix
@@ -32,7 +32,7 @@ namespace DragFix
 
             try
             {
-                HarmonyInstance.Patch(typeof(VRCAvatarManager).GetMethods().First(method => method.Name.StartsWith("Method_Private_Boolean_ApiAvatar_GameObject_") && !method.Name.Contains("_PDM_")), null,
+                HarmonyInstance.Patch(typeof(PipelineManager).GetMethod(nameof(PipelineManager.Start)), null,
                     new HarmonyMethod(typeof(DragFix).GetMethod("OnAvatarChanged")));
             }
             catch (Exception e) { Logger.Error("Failed to patch AvatarChanged: " + e); }
@@ -55,11 +55,11 @@ namespace DragFix
             m_DragThreshold = OpenVR.System != null ? vrDragThreshold : desktopDragThreshold;
         }
 
-        public static void OnAvatarChanged(VRCAvatarManager __instance)
+        public static void OnAvatarChanged(ref PipelineManager __instance)
         {
-            if (__instance.Pointer != VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0.Pointer) return;
+            if (__instance.gameObject.Pointer != VRCPlayer.field_Internal_Static_VRCPlayer_0?.prop_VRCAvatarManager_0.field_Private_GameObject_0.Pointer) return;
 
-            m_AvatarHeight = __instance.field_Private_VRC_AvatarDescriptor_0.ViewPosition.y;
+            m_AvatarHeight = VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0.field_Private_VRC_AvatarDescriptor_0.ViewPosition.y;
         }
 
         public static bool ShouldStartDragPatch(ref bool __result, Vector3 __0, Vector3 __1, bool __3)

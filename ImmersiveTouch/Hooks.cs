@@ -1,10 +1,10 @@
 ﻿using HarmonyLib;
 using MelonLoader;
 using System;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using UnhollowerBaseLib;
+using VRC.Core;
 
 namespace ImmersiveTouch
 {
@@ -45,8 +45,8 @@ namespace ImmersiveTouch
 
         public static void ApplyHarmonyHooks()
         {
-            ImmersiveTouch.harmony.Patch(typeof(VRCAvatarManager).GetMethods().First(method =>
-                method.Name.StartsWith("Method_Private_Boolean_ApiAvatar_GameObject_") && !method.Name.Contains("_PDM_")), null, new HarmonyMethod(typeof(ImmersiveTouch).GetMethod("OnAvatarChanged", BindingFlags.Public | BindingFlags.Static)), null);
+            ImmersiveTouch.harmony.Patch(typeof(PipelineManager).GetMethod(nameof(PipelineManager.Start)), null,
+                new HarmonyMethod(typeof(ImmersiveTouch).GetMethod("OnAvatarChanged", BindingFlags.Public | BindingFlags.Static)));
         }
     }
 }

@@ -6,8 +6,9 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 using VRC.SDKBase;
 using ImmersiveTouch.Extensions;
+using VRC.Core;
 
-[assembly: MelonInfo(typeof(ImmersiveTouch.ImmersiveTouch), "ImmersiveTouch", "1.1.4", "ImTiara", "https://github.com/ImTiara/VRCMods")]
+[assembly: MelonInfo(typeof(ImmersiveTouch.ImmersiveTouch), "ImmersiveTouch", "1.1.5", "ImTiara", "https://github.com/ImTiara/VRCMods")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace ImmersiveTouch
@@ -99,15 +100,19 @@ namespace ImmersiveTouch
             SetupAvatar();
         }
 
-        public static void OnAvatarChanged(VRCAvatarManager __instance)
+        public static void OnAvatarChanged(ref PipelineManager __instance)
         {
             try
             {
-                if (__instance.Pointer != Manager.GetLocalAvatarManager().Pointer) return;
+                if (Manager.GetLocalVRCPlayer() == null || __instance.gameObject.Pointer != Manager.GetLocalAvatarManager().field_Private_GameObject_0.Pointer) return;
 
-                currentAvatarObject = __instance.prop_GameObject_0;
-                currentAnimator = __instance.field_Private_Animator_0;
-                currentViewHeight = __instance.field_Private_VRC_AvatarDescriptor_0.ViewPosition.y;
+                VRCAvatarManager avatarManager = Manager.GetLocalAvatarManager();
+
+                if (avatarManager.prop_AvatarKind_0 != VRCAvatarManager.AvatarKind.Custom) return;
+
+                currentAvatarObject = avatarManager.prop_GameObject_0;
+                currentAnimator = avatarManager.field_Private_Animator_0;
+                currentViewHeight = avatarManager.field_Private_VRC_AvatarDescriptor_0.ViewPosition.y;
 
                 SetupAvatar();
             }
