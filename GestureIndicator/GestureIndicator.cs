@@ -1,4 +1,4 @@
-﻿using MelonLoader;
+using MelonLoader;
 using System;
 using System.Collections;
 using TMPro;
@@ -255,27 +255,37 @@ namespace GestureIndicator
 
             Color colorL = m_LeftTextColor;
             colorL.a = op;
-            leftGestureText.color = colorL;
-            leftIcon.color = colorL;
+
+            if(leftGestureText != null)
+                leftGestureText.color = colorL;
+            if(leftIcon != null)
+                leftIcon.color = colorL;
 
             Color colorR = m_RightTextColor;
             colorR.a = op;
-            rightGestureText.color = colorR;
-            rightIcon.color = colorR;
+            
+            if(rightGestureText != null)
+                rightGestureText.color = colorR;
+            if(rightIcon != null)
+                rightIcon.color = colorR;
         }
 
         private void ApplyTextPositions()
         {
-            leftGestureText.GetComponent<RectTransform>().anchoredPosition = new Vector2((-200f * m_X_Position) - 102.5f, -415f * m_Y_Position);
-            rightGestureText.GetComponent<RectTransform>().anchoredPosition = new Vector2((200f * m_X_Position) - 102.5f, -415f * m_Y_Position);
+            if (leftGestureText != null) 
+                leftGestureText.GetComponent<RectTransform>().anchoredPosition = new Vector2((-200f * m_X_Position) - 102.5f, -415f * m_Y_Position);
+            if (rightGestureText != null) 
+                rightGestureText.GetComponent<RectTransform>().anchoredPosition = new Vector2((200f * m_X_Position) - 102.5f, -415f * m_Y_Position);
         }
 
         private void ToggleIndicators(bool enable)
         {
             if (enable) MelonCoroutines.Start(CheckGesture());
 
-            leftGestureText.gameObject.SetActive(enable);
-            rightGestureText.gameObject.SetActive(enable);
+            if(leftGestureText != null)
+                leftGestureText.gameObject.SetActive(enable);
+            if(rightGestureText != null)
+                rightGestureText.gameObject.SetActive(enable);
         }
 
         public IEnumerator UiManagerInitializer()
