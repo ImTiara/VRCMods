@@ -18,6 +18,7 @@ namespace GestureIndicator
         private Color m_LeftTextColor = Color.cyan;
         private Color m_RightTextColor = Color.cyan;
         private float m_TextOpacity;
+        private float m_IconOpacity;
         private float m_X_Position;
         private float m_Y_Position;
         private float m_HideAfterSeconds;
@@ -41,6 +42,7 @@ namespace GestureIndicator
             MelonPreferences.CreateCategory(GetType().Name, "Gesture Indicator");
             MelonPreferences.CreateEntry(GetType().Name, "Enable", true, "Enable Gesture Indicator");
             MelonPreferences.CreateEntry(GetType().Name, "TextOpacity", 85f, "Text Opacity (%)");
+            MelonPreferences.CreateEntry(GetType().Name, "IconOpacity", 100f, "Icon Opacity (%)");
             MelonPreferences.CreateEntry(GetType().Name, "LeftTextColor", "#00FFFF", "Left Text Color");
             MelonPreferences.CreateEntry(GetType().Name, "RightTextColor", "#00FFFF", "Right Text Color");
             MelonPreferences.CreateEntry(GetType().Name, "TextXPosition", 1.0f, "Text X Position");
@@ -64,6 +66,7 @@ namespace GestureIndicator
         {
             m_Enable = MelonPreferences.GetEntryValue<bool>(GetType().Name, "Enable");
             m_TextOpacity = MelonPreferences.GetEntryValue<float>(GetType().Name, "TextOpacity");
+            m_IconOpacity = MelonPreferences.GetEntryValue<float>(GetType().Name, "IconOpacity");
             m_LeftTextColor = Manager.HexToColor(MelonPreferences.GetEntryValue<string>(GetType().Name, "LeftTextColor"));
             m_RightTextColor = Manager.HexToColor(MelonPreferences.GetEntryValue<string>(GetType().Name, "RightTextColor"));
             m_X_Position = MelonPreferences.GetEntryValue<float>(GetType().Name, "TextXPosition");
@@ -73,7 +76,7 @@ namespace GestureIndicator
             m_IconsOnly = MelonPreferences.GetEntryValue<bool>(GetType().Name, "IconsOnly");
 
             ToggleIndicators(m_Enable);
-            ApplyTextColors();
+            ApplyColors();
             ApplyTextPositions();
         }
         
@@ -248,27 +251,33 @@ namespace GestureIndicator
             rightIcon.gameObject.SetActive(false);
             rightIcon.sprite = null;
 
-            ApplyTextColors();
+            ApplyColors();
             ApplyTextPositions();
         }
 
-        private void ApplyTextColors()
+        private void ApplyColors()
         {
-            float op = m_TextOpacity / 100.0f;
+            var textOpacity = m_TextOpacity / 100.0f;
+            var iconOpacity = m_IconOpacity / 100.0f;
 
-            Color colorL = m_LeftTextColor;
-            colorL.a = op;
+            var colorL = m_LeftTextColor;
+            colorL.a = textOpacity;
 
             if(leftGestureText != null)
                 leftGestureText.color = colorL;
+            
+            colorL.a = iconOpacity;
             if(leftIcon != null)
                 leftIcon.color = colorL;
 
-            Color colorR = m_RightTextColor;
-            colorR.a = op;
+            
+            var colorR = m_RightTextColor;
+            colorR.a = textOpacity;
             
             if(rightGestureText != null)
                 rightGestureText.color = colorR;
+            
+            colorR.a = iconOpacity;
             if(rightIcon != null)
                 rightIcon.color = colorR;
         }
