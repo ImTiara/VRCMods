@@ -27,6 +27,7 @@ namespace ImmersiveTouch
         public static MelonPreferences_Entry<bool> COLLIDE_WORLD;
 
         public static float m_HapticDistance = 0.015f;
+        public static float m_AvatarHeightMod = 1.0f;
 
         public static CameraHaptic m_LeftCameraHaptic;
         public static CameraHaptic m_RightCameraHaptic;
@@ -64,11 +65,18 @@ namespace ImmersiveTouch
             ClassInjector.RegisterTypeInIl2Cpp<CameraHaptic>();
         }
 
+        public override void OnApplicationLateStart()
+        {
+            ScaleGoesBrrEx.Setup();
+        }
+
         public static void OnPipelineManagerStart(ref PipelineManager __instance)
         {
             try
             {
                 if (VRCPlayer.field_Internal_Static_VRCPlayer_0?.prop_VRCAvatarManager_0 == null || VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0.prop_GameObject_0.Pointer != __instance.gameObject.Pointer || VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0.prop_AvatarKind_0 != VRCAvatarManager.AvatarKind.Custom) return;
+
+                m_AvatarHeightMod = 1.0f;
 
                 SetupAvatar();
             }
@@ -92,7 +100,7 @@ namespace ImmersiveTouch
                     MelonLogger.Warning("Immersive Touch cannot use this avatar because no valid animator was found.");
                     return;
                 }
-                float viewHeight = VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0.field_Private_VRC_AvatarDescriptor_0.ViewPosition.y;
+                float viewHeight = VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0.field_Private_VRC_AvatarDescriptor_0.ViewPosition.y * m_AvatarHeightMod;
                 m_HapticDistance = viewHeight / HAPTIC_SENSITIVITY.Value;
                 
                 Transform leftHand = animator.GetBoneTransform(HumanBodyBones.LeftHand);
