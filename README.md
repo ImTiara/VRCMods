@@ -3,9 +3,7 @@ Please be aware that modifications to the VRChat client/app is a ToS violation a
 Use these mods at your own risk.
 
 # _ImmersiveTouch_
-- ImmersiveTouch provides haptic feedback in your VR controllers when your hands interacts with objects (meshes) or dynamic bones.
-This mod is _universal within VRChat_ and will run ontop of other mods that provides dynamic bone interactions with other players
-such as MultiplayerDynamicBones or emmVRC's Global Dynamic Bones.
+- ImmersiveTouch provides a satisfying haptic feedback in your VR controllers when your hands interacts with objects (meshes).
 The vibrations are speed dependent which means stroking hairs/tails etc feels very nice.
 
 
