@@ -3,6 +3,7 @@ using MelonLoader;
 using OVR.OpenVR;
 using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using VRC.Core;
 
 [assembly: MelonInfo(typeof(DragFix.DragFix), "DragFix", "1.0.2", "ImTiara", "https://github.com/ImTiara/VRCMods")]
@@ -12,62 +13,89 @@ namespace DragFix
 {
     public class DragFix : MelonMod
     {
-        public static MelonLogger.Instance Logger;
+        public static MelonPreferences_Entry<bool> ENABLE;
+        public static MelonPreferences_Entry<float> VR_DRAG_THRESHOLD;
+        public static MelonPreferences_Entry<float> DESKTOP_DRAG_THRESHOLD;
 
-        public static bool m_Enable;
-
-        public static float m_AvatarHeight;
-        public static float m_DragThreshold;
+        public static float m_AvatarHeight = 1.6f;
+        public static float m_AvatarHeightMod = 1.0f;
+        public static float m_DragThreshold = 0.002f;
 
         public override void OnApplicationStart()
         {
-            Logger = new MelonLogger.Instance(GetType().Name);
+            var category = MelonPreferences.CreateCategory("DragFix", "DragFix");
+            ENABLE = category.CreateEntry("Enable", true, "Enable DragFix");
+            VR_DRAG_THRESHOLD = category.CreateEntry("VRDragThreshold", 2.0f, "VR Drag Threshold");
+            DESKTOP_DRAG_THRESHOLD = category.CreateEntry("DesktopDragThreshold", 2.0f, "Desktop Drag Threshold");
 
-            MelonPreferences.CreateCategory(GetType().Name, "DragFix");
-            MelonPreferences.CreateEntry(GetType().Name, "Enable", true, "Enable DragFix");
-            MelonPreferences.CreateEntry(GetType().Name, "VRDragThreshold", 2.0f, "VR Drag Threshold");
-            MelonPreferences.CreateEntry(GetType().Name, "DesktopDragThreshold", 2.0f, "Desktop Drag Threshold");
+            VR_DRAG_THRESHOLD.OnValueChanged += (editedValue, defaultValue)
+                => RefreshDragThreshold();
+            
+            DESKTOP_DRAG_THRESHOLD.OnValueChanged += (editedValue, defaultValue)
+                => RefreshDragThreshold();
 
-            OnPreferencesSaved();
+            RefreshDragThreshold();
 
             try
             {
                 HarmonyInstance.Patch(typeof(PipelineManager).GetMethod(nameof(PipelineManager.Start)), null,
                     new HarmonyMethod(typeof(DragFix).GetMethod("OnAvatarChanged")));
             }
-            catch (Exception e) { Logger.Error("Failed to patch AvatarChanged: " + e); }
+            catch (Exception e) { MelonLogger.Error("Failed to patch PipelineManager.Start: " + e); }
 
             try
             {
-                HarmonyInstance.Patch(typeof(VRCStandaloneInputModule).GetMethod(nameof(VRCStandaloneInputModule.Method_Private_Static_Boolean_Vector3_Vector3_Single_Boolean_0)),
-                    new HarmonyMethod(typeof(DragFix).GetMethod("ShouldStartDragPatch")));
+                HarmonyInstance.Patch(typeof(VRCStandaloneInputModule).GetMethod(nameof(VRCStandaloneInputModule.ProcessDrag)),
+                    new HarmonyMethod(typeof(DragFix).GetMethod("ProcessDragPatch")));
             }
-            catch (Exception e) { Logger.Error("Failed to patch ShouldStartDrag: " + e); }
+            catch (Exception e) { MelonLogger.Error("Failed to patch VRCStandaloneInputModule.ProcessDrag: " + e); }
         }
 
-        public override void OnPreferencesSaved()
-        {
-            m_Enable = MelonPreferences.GetEntryValue<bool>(GetType().Name, "Enable");
-
-            float vrDragThreshold = MelonPreferences.GetEntryValue<float>(GetType().Name, "VRDragThreshold") / 1000;
-            float desktopDragThreshold = MelonPreferences.GetEntryValue<float>(GetType().Name, "DesktopDragThreshold") / 1000;
-
-            m_DragThreshold = OpenVR.System != null ? vrDragThreshold : desktopDragThreshold;
-        }
+        public override void OnApplicationLateStart()
+            => ScaleGoesBrrEx.Setup();
+        
+        public static void RefreshDragThreshold()
+            => m_DragThreshold = OpenVR.System != null ? VR_DRAG_THRESHOLD.Value / 1000 : DESKTOP_DRAG_THRESHOLD.Value / 1000;
+        
+        public static void RefreshAvatarHeight()
+            => m_AvatarHeight = VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0.field_Private_VRC_AvatarDescriptor_0.ViewPosition.y * m_AvatarHeightMod;
 
         public static void OnAvatarChanged(ref PipelineManager __instance)
         {
             if (__instance.gameObject.Pointer != VRCPlayer.field_Internal_Static_VRCPlayer_0?.prop_VRCAvatarManager_0.field_Private_GameObject_0.Pointer) return;
 
-            m_AvatarHeight = VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0.field_Private_VRC_AvatarDescriptor_0.ViewPosition.y;
+            m_AvatarHeightMod = 1.0f;
+
+            RefreshAvatarHeight();
         }
 
-        public static bool ShouldStartDragPatch(ref bool __result, Vector3 __0, Vector3 __1, bool __3)
+        public static bool ProcessDragPatch(ref VRCStandaloneInputModule __instance, ref PointerEventData __0)
         {
-            if (!m_Enable) return true;
+            if (!ENABLE.Value) return true;
+            
+            bool isPointerMoving = __0.IsPointerMoving();
+            if (isPointerMoving && __0.pointerDrag != null && !__0.dragging && ShouldStartDrag(__instance.field_Private_Dictionary_2_PointerEventData_Vector3_0[__0], __instance.field_Public_Vector3_0, __0.useDragThreshold))
+            {
+                ExecuteEvents.Execute(__0.pointerDrag, __0, ExecuteEvents.beginDragHandler);
+                __0.dragging = true;
+            }
+            
+            if (__0.dragging && isPointerMoving && __0.pointerDrag != null)
+            {
+                if (__0.pointerPress != __0.pointerDrag)
+                {
+                    ExecuteEvents.Execute(__0.pointerPress, __0, ExecuteEvents.pointerUpHandler);
+                    __0.eligibleForClick = false;
+                    __0.pointerPress = null;
+                    __0.rawPointerPress = null;
+                }
+                ExecuteEvents.Execute(__0.pointerDrag, __0, ExecuteEvents.dragHandler);
+            }
 
-            __result = !__3 || (__0 / m_AvatarHeight - __1 / m_AvatarHeight).sqrMagnitude >= m_DragThreshold;
             return false;
         }
+
+        public static bool ShouldStartDrag(Vector3 pressPos, Vector3 currentPos, bool useDragThreshold)
+            => !useDragThreshold || (pressPos / m_AvatarHeight - currentPos / m_AvatarHeight).sqrMagnitude >= m_DragThreshold;
     }
 }
