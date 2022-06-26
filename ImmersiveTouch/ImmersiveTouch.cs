@@ -8,7 +8,7 @@ using UnityEngine;
 using VRC.Core;
 using Object = UnityEngine.Object;
 
-[assembly: MelonInfo(typeof(ImmersiveTouch.ImmersiveTouch), "ImmersiveTouch", "2.0.0", "ImTiara", "https://github.com/ImTiara/VRCMods")]
+[assembly: MelonInfo(typeof(ImmersiveTouch.ImmersiveTouch), "ImmersiveTouch", "2.0.1", "ImTiara", "https://github.com/ImTiara/VRCMods")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace ImmersiveTouch
