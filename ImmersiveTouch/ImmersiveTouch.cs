@@ -1,371 +1,238 @@
-﻿using MelonLoader;
+﻿using HarmonyLib;
+using MelonLoader;
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using System.Reflection;
+using UnhollowerRuntimeLib;
 using UnityEngine;
-using VRC.SDKBase;
-using ImmersiveTouch.Extensions;
 using VRC.Core;
+using Object = UnityEngine.Object;
 
-[assembly: MelonInfo(typeof(ImmersiveTouch.ImmersiveTouch), "ImmersiveTouch", "1.1.5", "ImTiara", "https://github.com/ImTiara/VRCMods")]
+[assembly: MelonInfo(typeof(ImmersiveTouch.ImmersiveTouch), "ImmersiveTouch", "2.0.0", "ImTiara", "https://github.com/ImTiara/VRCMods")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace ImmersiveTouch
 {
     public class ImmersiveTouch : MelonMod
     {
-        public static MelonLogger.Instance Logger;
-        public static HarmonyLib.Harmony harmony;
+        public const float ORTHOGRAPHIC_SIZE_MOD = 4.0f;
+        public const float CLIP_PLANE_MOD = 40.0f;
+        public const float RENDER_INTERVAL = 0.09f;
 
-        private static bool m_Enable;
-        private static bool m_ExperimentalVibrations;
-        private static bool m_ColliderHaptic;
-        private static bool m_ColliderHapticIgnoreSelf;
-        private static bool m_MeshHaptic;
-        public static bool m_MeshHapticWorld;
-        public static bool m_MeshHapticPlayers;
+        public static MelonPreferences_Entry<bool> ENABLE;
+        public static MelonPreferences_Entry<float> HAPTIC_STRENGTH;
+        public static MelonPreferences_Entry<float> HAPTIC_SENSITIVITY;
+        public static MelonPreferences_Entry<bool> DOUBLE_SIDED;
+        public static MelonPreferences_Entry<bool> COLLIDE_PLAYERS;
+        public static MelonPreferences_Entry<bool> COLLIDE_WORLD;
 
-        private static float m_HapticAmplitude;
-        private static float m_ExperimentalHapticAmplitude;
-        private static float m_HapticSensitivity;
+        public static float m_HapticDistance = 0.015f;
 
-        private static bool isColliderHapticCapable;
-
-        private static float hapticDistance;
-
-        private static Transform leftWrist;
-        private static Transform rightWrist;
-
-        private static Vector3 previousLeftWristPosition;
-        private static Vector3 previousRightWristPosition;
-
-        public static readonly List<DynamicBoneCollider> allRegistratedColliders = new List<DynamicBoneCollider>();
-        public static readonly List<DynamicBoneCollider> registratedLeftColliders = new List<DynamicBoneCollider>();
-        public static readonly List<DynamicBoneCollider> registratedRightColliders = new List<DynamicBoneCollider>();
-
-        public static readonly List<DynamicBone> localDynamicBones = new List<DynamicBone>();
-
-        [ThreadStatic]
-        public static IntPtr currentDBI;
-
-        public static GameObject currentAvatarObject;
-        public static Animator currentAnimator;
-        public static float currentViewHeight;
+        public static CameraHaptic m_LeftCameraHaptic;
+        public static CameraHaptic m_RightCameraHaptic;
+        
+        public static CameraHaptic m_LeftCameraHapticDouble;
+        public static CameraHaptic m_RightCameraHapticDouble;
 
         public override void OnApplicationStart()
         {
-            Logger = new MelonLogger.Instance(GetType().Name);
-            harmony = HarmonyInstance;
+            var category = MelonPreferences.CreateCategory("ImmersiveTouch", "Immersive Touch");
+            ENABLE = category.CreateEntry("Enabled", true, "Enable Immersive Touch");
+            HAPTIC_STRENGTH = category.CreateEntry("VibrationStrength", 750.0f, "Vibration Strength");
+            HAPTIC_SENSITIVITY = category.CreateEntry("StrokeSensitivity", 250.0f, "Stroke Sensitivity");
+            DOUBLE_SIDED = category.CreateEntry("DoubleSidedCollision", false, "Double Sided Collision");
+            COLLIDE_PLAYERS = category.CreateEntry("PlayerCollision", true, "Player Collision");
+            COLLIDE_WORLD = category.CreateEntry("WorldCollision", true, "World Collision");
 
-            MelonPreferences.CreateCategory(GetType().Name, "Immersive Touch");
-            MelonPreferences.CreateEntry(GetType().Name, "Enable", true, "Enable Immersive Touch");
-            MelonPreferences.CreateEntry(GetType().Name, "ExperimentalVibrations", false, "Experimental Vibrations");
-            MelonPreferences.CreateEntry(GetType().Name, "HapticAmplitude", 100.0f, "Haptic Amplitude (%)");
-            MelonPreferences.CreateEntry(GetType().Name, "HapticSensitivity", 60.0f, "Haptic Sensitivity");
-            MelonPreferences.CreateEntry(GetType().Name, "ColliderHaptic", true, "Collider Haptic");
-            MelonPreferences.CreateEntry(GetType().Name, "IgnoreSelf", false, "Ignore Self Collisions");
-            MelonPreferences.CreateEntry(GetType().Name, "MeshHaptic", false, "Mesh Haptic");
-            MelonPreferences.CreateEntry(GetType().Name, "MeshHapticWorld", true, "Mesh Haptic World");
-            MelonPreferences.CreateEntry(GetType().Name, "MeshHapticPlayers", true, "Mesh Haptic Players");
+            ENABLE.OnValueChanged += (editedValue, defaultValue)
+                => SetupAvatar();
 
-            MelonCoroutines.Start(UiManagerInitializer());
+            COLLIDE_PLAYERS.OnValueChanged += (editedValue, defaultValue)
+                => UpdateCameraCullingMasks();
+
+            COLLIDE_WORLD.OnValueChanged += (editedValue, defaultValue)
+                => UpdateCameraCullingMasks();
+
+            MelonCoroutines.Start(VRCUiManagerInit());
+
+            HarmonyInstance.Patch(typeof(PipelineManager).GetMethod(nameof(PipelineManager.Start)), null,
+                new HarmonyMethod(typeof(ImmersiveTouch).GetMethod("OnPipelineManagerStart", BindingFlags.Public | BindingFlags.Static)));
+
+            ClassInjector.RegisterTypeInIl2Cpp<CameraHaptic>();
         }
 
-        public void OnUiManagerInit()
-        {
-            TurbonesEx.SetIsPresent();
-            MeshHapticEx.Setup();
-
-            OnPreferencesSaved();
-
-            Hooks.ApplyPatches(TurbonesEx.isPresent);
-        }
-
-        public override void OnPreferencesSaved()
-        {
-            m_Enable = MelonPreferences.GetEntryValue<bool>(GetType().Name, "Enable");
-            m_ExperimentalVibrations = MelonPreferences.GetEntryValue<bool>(GetType().Name, "ExperimentalVibrations");
-            m_HapticAmplitude = MelonPreferences.GetEntryValue<float>(GetType().Name, "HapticAmplitude") / 100.0f;
-            m_HapticSensitivity = MelonPreferences.GetEntryValue<float>(GetType().Name, "HapticSensitivity") * 10;
-            m_ColliderHaptic = MelonPreferences.GetEntryValue<bool>(GetType().Name, "ColliderHaptic");
-            m_ColliderHapticIgnoreSelf = MelonPreferences.GetEntryValue<bool>(GetType().Name, "IgnoreSelf");
-            m_MeshHaptic = MelonPreferences.GetEntryValue<bool>(GetType().Name, "MeshHaptic");
-            m_MeshHapticWorld = MelonPreferences.GetEntryValue<bool>(GetType().Name, "MeshHapticWorld");
-            m_MeshHapticPlayers = MelonPreferences.GetEntryValue<bool>(GetType().Name, "MeshHapticPlayers");
-
-            MeshHapticEx.cullingMask = Manager.CalculateLayerMask(m_MeshHapticWorld, m_MeshHapticPlayers);
-            m_ExperimentalHapticAmplitude = m_HapticAmplitude * 250;
-
-            SetupAvatar();
-        }
-
-        public static void OnAvatarChanged(ref PipelineManager __instance)
+        public static void OnPipelineManagerStart(ref PipelineManager __instance)
         {
             try
             {
-                if (Manager.GetLocalVRCPlayer() == null || __instance.gameObject.Pointer != Manager.GetLocalAvatarManager().field_Private_GameObject_0.Pointer) return;
-
-                VRCAvatarManager avatarManager = Manager.GetLocalAvatarManager();
-
-                if (avatarManager.prop_AvatarKind_0 != VRCAvatarManager.AvatarKind.Custom) return;
-
-                currentAvatarObject = avatarManager.prop_GameObject_0;
-                currentAnimator = avatarManager.field_Private_Animator_0;
-                currentViewHeight = avatarManager.field_Private_VRC_AvatarDescriptor_0.ViewPosition.y;
+                if (VRCPlayer.field_Internal_Static_VRCPlayer_0?.prop_VRCAvatarManager_0 == null || VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0.prop_GameObject_0.Pointer != __instance.gameObject.Pointer || VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0.prop_AvatarKind_0 != VRCAvatarManager.AvatarKind.Custom) return;
 
                 SetupAvatar();
             }
             catch (Exception e)
             {
-                Logger.Error($"Error checking when avatar changed:\n{e}");
+                MelonLogger.Error($"Error checking when avatar changed:\n{e}");
             }
         }
 
-        // Credits to knah for this idea
-        public static unsafe void OnUpdateParticles(IntPtr instance, bool __0)
+        public static void SetupAvatar()
         {
-            currentDBI = instance;
-
-            Hooks.updateParticlesDelegate(instance, __0);
-        }
-
-        public static unsafe void OnCollide(IntPtr instance, IntPtr particlePosition, float particleRadius)
-        {
-            if (!isColliderHapticCapable || (!allRegistratedColliders.HasPointer(instance)))
-            {
-                Hooks.collideDelegate(instance, particlePosition, particleRadius);
-                return;
-            }
-
-            // Store the original particle position and invoke the original method.
-            Vector3 prevParticlePos = Marshal.PtrToStructure<Vector3>(particlePosition);
-            Hooks.collideDelegate(instance, particlePosition, particleRadius);
-
-            // If the particle position was changed after the invoke, we have a collision!
-            if (prevParticlePos != Marshal.PtrToStructure<Vector3>(particlePosition))
-            {
-                SendHaptic(instance);
-            }
-        }
-
-        public override void OnUpdate()
-        {
-            if (!TurbonesEx.isPresent || !isColliderHapticCapable) return;
-
-            ulong mask = TurbonesEx.GetAndClearCollidingGroupsMask();
-
-            if ((mask & 1) != 0) SendHaptic(registratedLeftColliders[0].Pointer);
-            if ((mask & 2) != 0) SendHaptic(registratedRightColliders[0].Pointer);
-        }
-
-        public static void SendHaptic(IntPtr collider)
-        {
-            if (m_ColliderHapticIgnoreSelf && currentDBI != IntPtr.Zero && localDynamicBones.HasPointer(currentDBI)) return;
-
-            if (registratedLeftColliders.HasPointer(collider) && leftWrist != null)
-            {
-                float dist = Vector3.Distance(previousLeftWristPosition, leftWrist.position);
-                if (m_ExperimentalVibrations)
-                {
-                    if (dist > hapticDistance)
-                    {
-                        OVRHapticEx.SendLeftHaptic((ushort)(dist / hapticDistance * m_ExperimentalHapticAmplitude));
-
-                        previousLeftWristPosition = leftWrist.position;
-                    }
-                }
-                else
-                {
-                    if (dist > hapticDistance)
-                    {
-                        Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
-
-                        previousLeftWristPosition = leftWrist.position;
-                    }
-                }
-            }
-
-            if (registratedRightColliders.HasPointer(collider) && rightWrist != null)
-            {
-                float dist = Vector3.Distance(previousRightWristPosition, rightWrist.position);
-                if (m_ExperimentalVibrations)
-                {
-                    if (dist > hapticDistance)
-                    {
-                        OVRHapticEx.SendRightHaptic((ushort)(dist / hapticDistance * m_ExperimentalHapticAmplitude));
-
-                        previousRightWristPosition = rightWrist.position;
-                    }
-                }
-                else
-                {
-                    if (dist > hapticDistance)
-                    {
-                        Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
-
-                        previousRightWristPosition = rightWrist.position;
-                    }
-                }
-            }
-        }
-
-        public static void SendHaptic(Transform wrist)
-        {
-            if (leftWrist != null && wrist == leftWrist)
-            {
-                float dist = Vector3.Distance(previousLeftWristPosition, leftWrist.position);
-                if (m_ExperimentalVibrations)
-                {
-                    if (dist > hapticDistance)
-                    {
-                        OVRHapticEx.SendLeftHaptic((ushort)(dist / hapticDistance * m_ExperimentalHapticAmplitude));
-
-                        previousLeftWristPosition = leftWrist.position;
-                    }
-                }
-                else
-                {
-                    if (dist > hapticDistance)
-                    {
-                        Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Left, 0.001f, m_HapticAmplitude, 0.001f);
-
-                        previousLeftWristPosition = leftWrist.position;
-                    }
-                }
-            }
-
-            if (rightWrist != null && wrist == rightWrist)
-            {
-                float dist = Vector3.Distance(previousRightWristPosition, rightWrist.position);
-                if (m_ExperimentalVibrations)
-                {
-                    if (dist > hapticDistance)
-                    {
-                        OVRHapticEx.SendRightHaptic((ushort)(dist / hapticDistance * m_ExperimentalHapticAmplitude));
-
-                        previousRightWristPosition = rightWrist.position;
-                    }
-                }
-                else
-                {
-                    if (dist > hapticDistance)
-                    {
-                        Manager.GetLocalVRCPlayerApi().PlayHapticEventInHand(VRC_Pickup.PickupHand.Right, 0.001f, m_HapticAmplitude, 0.001f);
-
-                        previousRightWristPosition = rightWrist.position;
-                    }
-                }
-            }
-        }
-
-        private static void SetupAvatar()
-        {
-            isColliderHapticCapable = false;
-            currentDBI = IntPtr.Zero;
-
-            if (TurbonesEx.isPresent)
-            {
-                TurbonesEx.UnregisterCollisionFeedbackColliders();
-                TurbonesEx.UnregisterExcludedBonesFromCollisionFeedback();
-            }
-
-            allRegistratedColliders.Clear();
-            registratedLeftColliders.Clear();
-            registratedRightColliders.Clear();
-            localDynamicBones.Clear();
-
-            MeshHapticEx.Destroy();
-
-            if (!m_Enable || Manager.GetLocalVRCPlayer() == null) return;
-
             try
             {
-                if (currentAnimator == null || !currentAnimator.isHuman)
+                DestroyImmersiveTouch();
+
+                if (!ENABLE.Value) return;
+
+                Animator animator = VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0.field_Private_Animator_0;
+                if (animator == null || !animator.isHuman)
                 {
-                    FailedCapabilityResult("Invalid avatar animator.");
+                    MelonLogger.Warning("Immersive Touch cannot use this avatar because it has no valid animator.");
                     return;
                 }
 
-                hapticDistance = currentViewHeight / m_HapticSensitivity;
+                float viewHeight = VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0.field_Private_VRC_AvatarDescriptor_0.ViewPosition.y;
+                m_HapticDistance = viewHeight / HAPTIC_SENSITIVITY.Value;
 
-                leftWrist = currentAnimator.GetBoneTransform(HumanBodyBones.LeftHand);
-                rightWrist = currentAnimator.GetBoneTransform(HumanBodyBones.RightHand);
+                Transform leftHand = animator.GetBoneTransform(HumanBodyBones.LeftHand);
+                Transform rightHand = animator.GetBoneTransform(HumanBodyBones.RightHand);
 
-                if (leftWrist == null || rightWrist == null)
+                if (leftHand == null || rightHand == null)
                 {
-                    FailedCapabilityResult("Left or Right wrist are not mapped on this avatar.");
+                    MelonLogger.Warning("Immersive Touch cannot use this avatar because the Left/Right hand bone are missing.");
                     return;
                 }
 
-                Logger.Msg("Avatar Capability Result:");
+                Transform leftMiddleProximal = animator.GetBoneTransform(HumanBodyBones.LeftMiddleProximal);
+                Transform rightMiddleProximal = animator.GetBoneTransform(HumanBodyBones.RightMiddleProximal);
 
-                if (m_ColliderHaptic)
+                if (leftMiddleProximal == null || rightMiddleProximal == null)
                 {
-                    foreach (var collider in leftWrist.GetComponentsInChildren<DynamicBoneCollider>(true))
-                    {
-                        registratedLeftColliders.Add(collider);
-
-                        if (TurbonesEx.isPresent) TurbonesEx.RegisterColliderForCollisionFeedback(collider.Pointer, 0);
-                    }
-
-                    foreach (var collider in rightWrist.GetComponentsInChildren<DynamicBoneCollider>(true))
-                    {
-                        registratedRightColliders.Add(collider);
-
-                        if (TurbonesEx.isPresent) TurbonesEx.RegisterColliderForCollisionFeedback(collider.Pointer, 1);
-                    }
-
-                    isColliderHapticCapable = registratedLeftColliders.Count != 0 && registratedRightColliders.Count != 0;
-
-                    if (isColliderHapticCapable)
-                    {
-                        allRegistratedColliders.AddRange(registratedLeftColliders);
-                        allRegistratedColliders.AddRange(registratedRightColliders);
-
-                        foreach (var db in currentAvatarObject.GetDynamicBones())
-                        {
-                            localDynamicBones.Add(db);
-
-                            if (TurbonesEx.isPresent && m_ColliderHapticIgnoreSelf) TurbonesEx.ExcludeBoneFromCollisionFeedback(db.Pointer);
-                        }
-
-                        Logger.Msg("-------------------------");
-
-                        Logger.Msg($"OK Collider Haptic! (Left collider count: {registratedLeftColliders.Count}. Right collider count: {registratedRightColliders.Count})");
-                        Logger.Msg($"Collider Haptic is ignoring self collisions: {m_ColliderHapticIgnoreSelf}");
-                        Logger.Msg($"Collider Haptic is using Turbones: {TurbonesEx.isPresent}");
-                    }
-                    else Logger.Warning("Failed Collider Haptic: No hand colliders found on avatar.");
+                    MelonLogger.Warning("Immersive Touch cannot use this avatar because the Left/Right Middle Proximal finger bone are missing.");
+                    return;
                 }
 
-                if (m_MeshHaptic && (m_MeshHapticPlayers || m_MeshHapticWorld)) MeshHapticEx.SetupAvatar(currentAnimator);
+                Transform leftMiddleDistal = animator.GetBoneTransform(HumanBodyBones.LeftMiddleDistal);
+                Transform rightMiddleDistal = animator.GetBoneTransform(HumanBodyBones.RightMiddleDistal);
 
-                Logger.Msg("-------------------------");
+                if (leftMiddleDistal == null || rightMiddleDistal == null)
+                {
+                    MelonLogger.Warning("Immersive Touch cannot use this avatar because the Left/Right Middle Distal finger bone are missing.");
+                    return;
+                }
 
-                Logger.Msg($"Haptic Amplitude: {m_HapticAmplitude * 100}%");
-                Logger.Msg($"Haptic Sensitivity: {m_HapticSensitivity / 10.0f}");
-                Logger.Msg($"Using Experimental Vibrations: {m_ExperimentalVibrations}");
+                m_LeftCameraHaptic = ConfigureCameraHaptic(OVR.OpenVR.ETrackedControllerRole.LeftHand, leftHand, leftMiddleProximal, leftMiddleDistal, viewHeight);
+                m_RightCameraHaptic = ConfigureCameraHaptic(OVR.OpenVR.ETrackedControllerRole.RightHand, rightHand, rightMiddleProximal, rightMiddleDistal, viewHeight);
+                
+                if (DOUBLE_SIDED.Value)
+                {
+                    m_LeftCameraHapticDouble = ConfigureCameraHaptic(OVR.OpenVR.ETrackedControllerRole.LeftHand, leftHand, leftMiddleProximal, leftMiddleDistal, viewHeight);
+                    m_RightCameraHapticDouble = ConfigureCameraHaptic(OVR.OpenVR.ETrackedControllerRole.RightHand, rightHand, rightMiddleProximal, rightMiddleDistal, viewHeight);
 
-                Logger.Msg("-------------------------");
+                    m_LeftCameraHapticDouble.transform.localEulerAngles = new Vector3(0, 0, 0);
+                    m_RightCameraHapticDouble.transform.localEulerAngles = new Vector3(0, 0, 0);
+                }
+
+                UpdateCameraCullingMasks();
+
+                MelonLogger.Msg("Immersive Touch is now active on this avatar!");
             }
-            catch (Exception e)
+            catch(Exception e)
             {
-                isColliderHapticCapable = false;
-                Logger.Error($"Error when checking capability\n{e}");
-            }
-
-            static void FailedCapabilityResult(string reason)
-            {
-                Logger.Warning($"Failed Capability Result: {reason}");
-                isColliderHapticCapable = false;
+                MelonLogger.Error($"Error when setting up avatar: {e}");
             }
         }
 
-        public IEnumerator UiManagerInitializer()
+        public static CameraHaptic ConfigureCameraHaptic(OVR.OpenVR.ETrackedControllerRole controllerRole, Transform hand, Transform middleProximal, Transform middleDistal, float viewHeight)
+        {
+            Transform cameraHapticObject = new GameObject().transform;
+            cameraHapticObject.parent = middleProximal;
+            cameraHapticObject.localPosition = Vector3.zero;
+            cameraHapticObject.parent = hand;
+            cameraHapticObject.localEulerAngles = new Vector3(0, 180, 0);
+
+            CameraHaptic cameraHaptic = cameraHapticObject.gameObject.AddComponent<CameraHaptic>();
+            cameraHaptic.controller = controllerRole;
+            cameraHaptic.camera.orthographicSize = Vector3.Distance(hand.position, middleDistal.position) / ORTHOGRAPHIC_SIZE_MOD;
+            cameraHaptic.camera.nearClipPlane = -(viewHeight / CLIP_PLANE_MOD);
+            cameraHaptic.camera.farClipPlane = viewHeight / CLIP_PLANE_MOD;
+
+            return cameraHaptic;
+        }
+
+        public static void DestroyImmersiveTouch()
+        {
+            if (m_LeftCameraHaptic != null)
+            {
+                try // The garbage collector was being too aggressive >:(
+                {
+                    Object.DestroyImmediate(m_LeftCameraHaptic.gameObject);
+                }
+                catch { }
+            }
+
+            if (m_RightCameraHaptic != null)
+            {
+                try
+                {
+                    Object.DestroyImmediate(m_RightCameraHaptic.gameObject);
+                }
+                catch { }
+            }
+
+            if (DOUBLE_SIDED.Value)
+            {
+                if (m_LeftCameraHapticDouble != null)
+                {
+                    try
+                    {
+                        Object.DestroyImmediate(m_LeftCameraHapticDouble.gameObject);
+                    }
+                    catch { }
+                }
+
+                if (m_RightCameraHapticDouble != null)
+                {
+                    try
+                    {
+                        Object.DestroyImmediate(m_RightCameraHapticDouble.gameObject);
+                    }
+                    catch { }
+                }
+            }
+        }
+
+        public static void UpdateCameraCullingMasks()
+        {
+            try
+            {
+                int result = CalculateLayerMask(COLLIDE_WORLD.Value, COLLIDE_PLAYERS.Value);
+
+                if (m_LeftCameraHaptic != null) m_LeftCameraHaptic.camera.cullingMask = result;
+                if (m_RightCameraHaptic != null) m_RightCameraHaptic.camera.cullingMask = result;
+
+                if (DOUBLE_SIDED.Value)
+                {
+                    if (m_LeftCameraHapticDouble != null) m_LeftCameraHapticDouble.camera.cullingMask = result;
+                    if (m_RightCameraHapticDouble != null) m_RightCameraHapticDouble.camera.cullingMask = result;
+                }
+            }
+            catch(Exception e)
+            {
+                MelonLogger.Error($"Error updating culling masks: {e}");
+            }
+        }
+
+        public static int CalculateLayerMask(bool allowWorld, bool allowPlayers)
+            => (allowWorld ? (1 << 0) : 0) | (allowPlayers ? (1 << 9) : 0);
+
+        public static IEnumerator VRCUiManagerInit()
         {
             while (VRCUiManager.prop_VRCUiManager_0 == null) yield return null;
-            OnUiManagerInit();
+
+            foreach (var renderModel in VRCVrCamera.field_Private_Static_VRCVrCamera_0.GetComponentsInChildren<SteamVR_RenderModel>(true))
+            {
+                renderModel.gameObject.layer = 10;
+            }
         }
     }
 }
