@@ -167,7 +167,7 @@ namespace ImmersiveTouch
             {
                 if (m_LeftCameraHaptic != null)
                 {
-                        Object.DestroyImmediate(m_LeftCameraHaptic.gameObject);
+                    Object.DestroyImmediate(m_LeftCameraHaptic.gameObject);
                 }
             }
             catch { }
