@@ -47,6 +47,9 @@ namespace ImmersiveTouch
             ENABLE.OnValueChanged += (editedValue, defaultValue)
                 => SetupAvatar();
 
+            DOUBLE_SIDED.OnValueChanged += (editedValue, defaultValue)
+                => SetupAvatar();
+
             COLLIDE_PLAYERS.OnValueChanged += (editedValue, defaultValue)
                 => UpdateCameraCullingMasks();
 
@@ -83,16 +86,15 @@ namespace ImmersiveTouch
 
                 if (!ENABLE.Value) return;
 
-                Animator animator = VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0.field_Private_Animator_0;
+                Animator animator = VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0?.field_Private_Animator_0;
                 if (animator == null || !animator.isHuman)
                 {
-                    MelonLogger.Warning("Immersive Touch cannot use this avatar because it has no valid animator.");
+                    MelonLogger.Warning("Immersive Touch cannot use this avatar because no valid animator was found.");
                     return;
                 }
-
                 float viewHeight = VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0.field_Private_VRC_AvatarDescriptor_0.ViewPosition.y;
                 m_HapticDistance = viewHeight / HAPTIC_SENSITIVITY.Value;
-
+                
                 Transform leftHand = animator.GetBoneTransform(HumanBodyBones.LeftHand);
                 Transform rightHand = animator.GetBoneTransform(HumanBodyBones.RightHand);
 
@@ -122,7 +124,7 @@ namespace ImmersiveTouch
 
                 m_LeftCameraHaptic = ConfigureCameraHaptic(OVR.OpenVR.ETrackedControllerRole.LeftHand, leftHand, leftMiddleProximal, leftMiddleDistal, viewHeight);
                 m_RightCameraHaptic = ConfigureCameraHaptic(OVR.OpenVR.ETrackedControllerRole.RightHand, rightHand, rightMiddleProximal, rightMiddleDistal, viewHeight);
-                
+
                 if (DOUBLE_SIDED.Value)
                 {
                     m_LeftCameraHapticDouble = ConfigureCameraHaptic(OVR.OpenVR.ETrackedControllerRole.LeftHand, leftHand, leftMiddleProximal, leftMiddleDistal, viewHeight);
@@ -161,43 +163,43 @@ namespace ImmersiveTouch
 
         public static void DestroyImmersiveTouch()
         {
-            if (m_LeftCameraHaptic != null)
+            try // The garbage collector was being too aggressive >:(
             {
-                try // The garbage collector was being too aggressive >:(
+                if (m_LeftCameraHaptic != null)
                 {
-                    Object.DestroyImmediate(m_LeftCameraHaptic.gameObject);
+                        Object.DestroyImmediate(m_LeftCameraHaptic.gameObject);
                 }
-                catch { }
             }
+            catch { }
 
-            if (m_RightCameraHaptic != null)
+            try
             {
-                try
+                if (m_RightCameraHaptic != null)
                 {
                     Object.DestroyImmediate(m_RightCameraHaptic.gameObject);
                 }
-                catch { }
             }
+            catch { }
 
             if (DOUBLE_SIDED.Value)
             {
-                if (m_LeftCameraHapticDouble != null)
+                try
                 {
-                    try
+                    if (m_LeftCameraHapticDouble != null)
                     {
                         Object.DestroyImmediate(m_LeftCameraHapticDouble.gameObject);
                     }
-                    catch { }
                 }
+                catch { }
 
-                if (m_RightCameraHapticDouble != null)
+                try
                 {
-                    try
+                    if (m_RightCameraHapticDouble != null)
                     {
                         Object.DestroyImmediate(m_RightCameraHapticDouble.gameObject);
                     }
-                    catch { }
                 }
+                catch { }
             }
         }
 
