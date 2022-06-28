@@ -3,8 +3,6 @@ using System;
 using System.Reflection;
 using UnityEngine;
 
-[assembly: MelonOptionalDependencies("ScaleGoesBrr")]
-
 namespace DragFix
 {
     public class ScaleGoesBrrEx

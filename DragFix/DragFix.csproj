@@ -24,9 +24,6 @@
       <Reference Include="Oculus.VR">
         <HintPath>..\..\..\MelonLoader\Managed\Oculus.VR.dll</HintPath>
       </Reference>
-      <Reference Include="ScaleGoesBrr">
-        <HintPath>..\..\..\Mods\ScaleGoesBrr.dll</HintPath>
-      </Reference>
       <Reference Include="UnhollowerBaseLib">
         <HintPath>..\..\..\MelonLoader\Managed\UnhollowerBaseLib.dll</HintPath>
       </Reference>
