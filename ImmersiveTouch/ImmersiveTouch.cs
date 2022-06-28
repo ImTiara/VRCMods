@@ -8,7 +8,7 @@ using UnityEngine;
 using VRC.Core;
 using Object = UnityEngine.Object;
 
-[assembly: MelonInfo(typeof(ImmersiveTouch.ImmersiveTouch), "ImmersiveTouch", "2.0.1", "ImTiara", "https://github.com/ImTiara/VRCMods")]
+[assembly: MelonInfo(typeof(ImmersiveTouch.ImmersiveTouch), "ImmersiveTouch", "2.0.2", "ImTiara", "https://github.com/ImTiara/VRCMods")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace ImmersiveTouch
@@ -46,10 +46,13 @@ namespace ImmersiveTouch
             COLLIDE_WORLD = category.CreateEntry("WorldCollision", true, "World Collision");
 
             ENABLE.OnValueChanged += (editedValue, defaultValue)
-                => SetupAvatar();
+                => SetupAvatar(true);
+
+            HAPTIC_SENSITIVITY.OnValueChanged += (editedValue, defaultValue)
+                => SetupAvatar(false);
 
             DOUBLE_SIDED.OnValueChanged += (editedValue, defaultValue)
-                => SetupAvatar();
+                => SetupAvatar(false);
 
             COLLIDE_PLAYERS.OnValueChanged += (editedValue, defaultValue)
                 => UpdateCameraCullingMasks();
@@ -78,7 +81,7 @@ namespace ImmersiveTouch
 
                 m_AvatarHeightMod = 1.0f;
 
-                SetupAvatar();
+                SetupAvatar(true);
             }
             catch (Exception e)
             {
@@ -86,7 +89,7 @@ namespace ImmersiveTouch
             }
         }
 
-        public static void SetupAvatar()
+        public static void SetupAvatar(bool showMessages)
         {
             try
             {
@@ -97,7 +100,7 @@ namespace ImmersiveTouch
                 Animator animator = VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0?.field_Private_Animator_0;
                 if (animator == null || !animator.isHuman)
                 {
-                    MelonLogger.Warning("Immersive Touch cannot use this avatar because no valid animator was found.");
+                    if (showMessages) MelonLogger.Warning("Immersive Touch cannot use this avatar because no valid animator was found.");
                     return;
                 }
                 float viewHeight = VRCPlayer.field_Internal_Static_VRCPlayer_0.prop_VRCAvatarManager_0.field_Private_VRC_AvatarDescriptor_0.ViewPosition.y * m_AvatarHeightMod;
@@ -108,7 +111,7 @@ namespace ImmersiveTouch
 
                 if (leftHand == null || rightHand == null)
                 {
-                    MelonLogger.Warning("Immersive Touch cannot use this avatar because the Left/Right hand bone are missing.");
+                    if (showMessages) MelonLogger.Warning("Immersive Touch cannot use this avatar because the Left/Right hand bone are missing.");
                     return;
                 }
 
@@ -117,7 +120,7 @@ namespace ImmersiveTouch
 
                 if (leftMiddleProximal == null || rightMiddleProximal == null)
                 {
-                    MelonLogger.Warning("Immersive Touch cannot use this avatar because the Left/Right Middle Proximal finger bone are missing.");
+                    if (showMessages) MelonLogger.Warning("Immersive Touch cannot use this avatar because the Left/Right Middle Proximal finger bone are missing.");
                     return;
                 }
 
@@ -126,7 +129,7 @@ namespace ImmersiveTouch
 
                 if (leftMiddleDistal == null || rightMiddleDistal == null)
                 {
-                    MelonLogger.Warning("Immersive Touch cannot use this avatar because the Left/Right Middle Distal finger bone are missing.");
+                    if (showMessages) MelonLogger.Warning("Immersive Touch cannot use this avatar because the Left/Right Middle Distal finger bone are missing.");
                     return;
                 }
 
@@ -144,11 +147,11 @@ namespace ImmersiveTouch
 
                 UpdateCameraCullingMasks();
 
-                MelonLogger.Msg("Immersive Touch is now active on this avatar!");
+                if (showMessages) MelonLogger.Msg("Immersive Touch is now active on this avatar!");
             }
             catch(Exception e)
             {
-                MelonLogger.Error($"Error when setting up avatar: {e}");
+                if (showMessages) MelonLogger.Error($"Error when setting up avatar: {e}");
             }
         }
 

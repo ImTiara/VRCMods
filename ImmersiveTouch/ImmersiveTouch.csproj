@@ -3,7 +3,7 @@
         <TargetFramework>net472</TargetFramework>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>8.0</LangVersion>
-        <Version>2.0.1</Version>
+        <Version>2.0.2</Version>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
       <OutputPath>..\Output\</OutputPath>
@@ -23,9 +23,6 @@
       </Reference>
       <Reference Include="Oculus.VR">
         <HintPath>..\..\..\MelonLoader\Managed\Oculus.VR.dll</HintPath>
-      </Reference>
-      <Reference Include="ScaleGoesBrr">
-        <HintPath>..\..\..\Mods\ScaleGoesBrr.dll</HintPath>
       </Reference>
       <Reference Include="UnhollowerBaseLib">
         <HintPath>..\..\..\MelonLoader\Managed\UnhollowerBaseLib.dll</HintPath>

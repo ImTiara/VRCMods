@@ -4,8 +4,6 @@ using UnityEngine;
 using System.Reflection;
 using System;
 
-[assembly: MelonOptionalDependencies("ScaleGoesBrr")]
-
 namespace ImmersiveTouch
 {
     public class ScaleGoesBrrEx
@@ -45,7 +43,7 @@ namespace ImmersiveTouch
         public static IEnumerator DelayedChange()
         {
             yield return new WaitForSeconds(2.5f);
-            ImmersiveTouch.SetupAvatar();
+            ImmersiveTouch.SetupAvatar(false);
             isApplyingChange = false;
         }
     }
