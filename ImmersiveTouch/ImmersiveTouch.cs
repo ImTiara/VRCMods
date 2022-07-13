@@ -17,7 +17,6 @@ namespace ImmersiveTouch
     {
         public const float ORTHOGRAPHIC_SIZE_MOD = 4.0f;
         public const float CLIP_PLANE_MOD = 40.0f;
-        public const float RENDER_INTERVAL = 0.09f;
 
         public static MelonPreferences_Entry<bool> ENABLE;
         public static MelonPreferences_Entry<float> HAPTIC_STRENGTH;
@@ -25,6 +24,7 @@ namespace ImmersiveTouch
         public static MelonPreferences_Entry<bool> DOUBLE_SIDED;
         public static MelonPreferences_Entry<bool> COLLIDE_PLAYERS;
         public static MelonPreferences_Entry<bool> COLLIDE_WORLD;
+        public static MelonPreferences_Entry<float> RENDER_INTERVAL;
 
         public static float m_HapticDistance = 0.015f;
         public static float m_AvatarHeightMod = 1.0f;
@@ -44,6 +44,7 @@ namespace ImmersiveTouch
             DOUBLE_SIDED = category.CreateEntry("DoubleSidedCollision", false, "Double Sided Collision");
             COLLIDE_PLAYERS = category.CreateEntry("PlayerCollision", true, "Player Collision");
             COLLIDE_WORLD = category.CreateEntry("WorldCollision", true, "World Collision");
+            RENDER_INTERVAL = category.CreateEntry("RenderInterval", 0.09f, "Render Interval (Lower value = accurate collisions but more GPU usage)");
 
             ENABLE.OnValueChanged += (editedValue, defaultValue)
                 => SetupAvatar(true);

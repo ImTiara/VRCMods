@@ -60,7 +60,7 @@ namespace ImmersiveTouch
             while (_render)
             {
                 camera.enabled = true;
-                yield return new WaitForSeconds(ImmersiveTouch.RENDER_INTERVAL);
+                yield return new WaitForSeconds(ImmersiveTouch.RENDER_INTERVAL.Value);
             }
         }
 
