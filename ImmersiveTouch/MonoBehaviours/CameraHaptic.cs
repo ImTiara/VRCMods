@@ -36,7 +36,7 @@ namespace ImmersiveTouch
             camera = gameObject.AddComponent<Camera>();
             camera.depth = -5;
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = Color.black;
+            camera.backgroundColor = new Color(0.1f, 0, 0);
             camera.orthographic = true;
             camera.nearClipPlane = -0.1f;
             camera.farClipPlane = 0.1f;
@@ -50,7 +50,9 @@ namespace ImmersiveTouch
 
             asyncGPUReadbackRequest = new Action<AsyncGPUReadbackRequest>((readback) =>
             {
-                isColliding = Marshal.PtrToStructure<byte>(readback.GetDataRaw(0)) != 0;
+                //MelonLogger.Msg(Marshal.PtrToStructure<byte>(readback.GetDataRaw(0)).ToString());
+
+                isColliding = Marshal.PtrToStructure<byte>(readback.GetDataRaw(0)) != 3;
             });
         }
 
