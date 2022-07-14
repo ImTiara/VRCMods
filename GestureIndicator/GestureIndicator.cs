@@ -1,4 +1,4 @@
-﻿using MelonLoader;
+using MelonLoader;
 using System;
 using System.Collections;
 using TMPro;
@@ -18,10 +18,12 @@ namespace GestureIndicator
         private Color m_LeftTextColor = Color.cyan;
         private Color m_RightTextColor = Color.cyan;
         private float m_TextOpacity;
+        private float m_IconOpacity;
         private float m_X_Position;
         private float m_Y_Position;
         private float m_HideAfterSeconds;
         private bool m_UseIcons;
+        private bool m_IconsOnly;
 
         private TextMeshProUGUI leftGestureText;
         private TextMeshProUGUI rightGestureText;
@@ -40,12 +42,14 @@ namespace GestureIndicator
             MelonPreferences.CreateCategory(GetType().Name, "Gesture Indicator");
             MelonPreferences.CreateEntry(GetType().Name, "Enable", true, "Enable Gesture Indicator");
             MelonPreferences.CreateEntry(GetType().Name, "TextOpacity", 85f, "Text Opacity (%)");
+            MelonPreferences.CreateEntry(GetType().Name, "IconOpacity", 100f, "Icon Opacity (%)");
             MelonPreferences.CreateEntry(GetType().Name, "LeftTextColor", "#00FFFF", "Left Text Color");
             MelonPreferences.CreateEntry(GetType().Name, "RightTextColor", "#00FFFF", "Right Text Color");
             MelonPreferences.CreateEntry(GetType().Name, "TextXPosition", 1.0f, "Text X Position");
             MelonPreferences.CreateEntry(GetType().Name, "TextYPosition", 1.0f, "Text Y Position");
             MelonPreferences.CreateEntry(GetType().Name, "HideAfterSeconds", 0.0f, "Hide After Seconds (0 = never)");
             MelonPreferences.CreateEntry(GetType().Name, "UseIcons", true, "Use Icons");
+            MelonPreferences.CreateEntry(GetType().Name, "IconsOnly", false, "Icons Only");
 
             LoadAssets.loadAssets();
             MelonCoroutines.Start(UiManagerInitializer());
@@ -62,18 +66,20 @@ namespace GestureIndicator
         {
             m_Enable = MelonPreferences.GetEntryValue<bool>(GetType().Name, "Enable");
             m_TextOpacity = MelonPreferences.GetEntryValue<float>(GetType().Name, "TextOpacity");
+            m_IconOpacity = MelonPreferences.GetEntryValue<float>(GetType().Name, "IconOpacity");
             m_LeftTextColor = Manager.HexToColor(MelonPreferences.GetEntryValue<string>(GetType().Name, "LeftTextColor"));
             m_RightTextColor = Manager.HexToColor(MelonPreferences.GetEntryValue<string>(GetType().Name, "RightTextColor"));
             m_X_Position = MelonPreferences.GetEntryValue<float>(GetType().Name, "TextXPosition");
             m_Y_Position = MelonPreferences.GetEntryValue<float>(GetType().Name, "TextYPosition");
             m_HideAfterSeconds = MelonPreferences.GetEntryValue<float>(GetType().Name, "HideAfterSeconds");
             m_UseIcons = MelonPreferences.GetEntryValue<bool>(GetType().Name, "UseIcons");
+            m_IconsOnly = MelonPreferences.GetEntryValue<bool>(GetType().Name, "IconsOnly");
 
             ToggleIndicators(m_Enable);
-            ApplyTextColors();
+            ApplyColors();
             ApplyTextPositions();
         }
-
+        
         private IEnumerator CheckGesture()
         {
             while (m_Enable)
@@ -100,13 +106,13 @@ namespace GestureIndicator
             {
                 switch (Manager.GetLeftGesture())
                 {
-                    case HandGestureController.Gesture.Fist: leftGestureText.text = "Fist"; leftIcon.sprite = LoadAssets.Fist; break;
-                    case HandGestureController.Gesture.Open: leftGestureText.text = "Hand Open"; leftIcon.sprite = LoadAssets.OpenHand; break;
-                    case HandGestureController.Gesture.Point: leftGestureText.text = "Point"; leftIcon.sprite = LoadAssets.Point; break;
-                    case HandGestureController.Gesture.Peace: leftGestureText.text = "Victory"; leftIcon.sprite = LoadAssets.Victory; break;
-                    case HandGestureController.Gesture.RockNRoll: leftGestureText.text = "RockNRoll"; leftIcon.sprite = LoadAssets.RockAndRoll; break;
-                    case HandGestureController.Gesture.Gun: leftGestureText.text = "Hand Gun"; leftIcon.sprite = LoadAssets.FingerGun; break;
-                    case HandGestureController.Gesture.ThumbsUp: leftGestureText.text = "Thumbs Up"; leftIcon.sprite = LoadAssets.ThumbsUp; break;
+                    case HandGestureController.Gesture.Fist: leftGestureText.text = m_IconsOnly ? "" : "Fist"; leftIcon.sprite = LoadAssets.Fist; break;
+                    case HandGestureController.Gesture.Open: leftGestureText.text = m_IconsOnly ? "" : "Hand Open"; leftIcon.sprite = LoadAssets.OpenHand; break;
+                    case HandGestureController.Gesture.Point: leftGestureText.text = m_IconsOnly ? "" : "Point"; leftIcon.sprite = LoadAssets.Point; break;
+                    case HandGestureController.Gesture.Peace: leftGestureText.text = m_IconsOnly ? "" : "Victory"; leftIcon.sprite = LoadAssets.Victory; break;
+                    case HandGestureController.Gesture.RockNRoll: leftGestureText.text = m_IconsOnly ? "" : "RockNRoll"; leftIcon.sprite = LoadAssets.RockAndRoll; break;
+                    case HandGestureController.Gesture.Gun: leftGestureText.text = m_IconsOnly ? "" : "Hand Gun"; leftIcon.sprite = LoadAssets.FingerGun; break;
+                    case HandGestureController.Gesture.ThumbsUp: leftGestureText.text = m_IconsOnly ? "" : "Thumbs Up"; leftIcon.sprite = LoadAssets.ThumbsUp; break;
                 }
                 if (m_UseIcons) leftIcon.gameObject.SetActive(true);
             }
@@ -120,13 +126,13 @@ namespace GestureIndicator
             {
                 switch (Manager.GetRightGesture())
                 {
-                    case HandGestureController.Gesture.Fist: rightGestureText.text = "Fist"; rightIcon.sprite = LoadAssets.Fist; break;
-                    case HandGestureController.Gesture.Open: rightGestureText.text = "Hand Open"; rightIcon.sprite = LoadAssets.OpenHand; break;
-                    case HandGestureController.Gesture.Point: rightGestureText.text = "Point"; rightIcon.sprite = LoadAssets.Point; break;
-                    case HandGestureController.Gesture.Peace: rightGestureText.text = "Victory"; rightIcon.sprite = LoadAssets.Victory; break;
-                    case HandGestureController.Gesture.RockNRoll: rightGestureText.text = "RockNRoll"; rightIcon.sprite = LoadAssets.RockAndRoll; break;
-                    case HandGestureController.Gesture.Gun: rightGestureText.text = "Hand Gun"; rightIcon.sprite = LoadAssets.FingerGun; break;
-                    case HandGestureController.Gesture.ThumbsUp: rightGestureText.text = "Thumbs Up"; rightIcon.sprite = LoadAssets.ThumbsUp; break;
+                    case HandGestureController.Gesture.Fist: rightGestureText.text = m_IconsOnly ? "" : "Fist"; rightIcon.sprite = LoadAssets.Fist; break;
+                    case HandGestureController.Gesture.Open: rightGestureText.text = m_IconsOnly ? "" : "Hand Open"; rightIcon.sprite = LoadAssets.OpenHand; break;
+                    case HandGestureController.Gesture.Point: rightGestureText.text = m_IconsOnly ? "" : "Point"; rightIcon.sprite = LoadAssets.Point; break;
+                    case HandGestureController.Gesture.Peace: rightGestureText.text = m_IconsOnly ? "" : "Victory"; rightIcon.sprite = LoadAssets.Victory; break;
+                    case HandGestureController.Gesture.RockNRoll: rightGestureText.text = m_IconsOnly ? "" : "RockNRoll"; rightIcon.sprite = LoadAssets.RockAndRoll; break;
+                    case HandGestureController.Gesture.Gun: rightGestureText.text = m_IconsOnly ? "" : "Hand Gun"; rightIcon.sprite = LoadAssets.FingerGun; break;
+                    case HandGestureController.Gesture.ThumbsUp: rightGestureText.text = m_IconsOnly ? "" : "Thumbs Up"; rightIcon.sprite = LoadAssets.ThumbsUp; break;
                 }
                 if (m_UseIcons) rightIcon.gameObject.SetActive(true);
             }
@@ -152,13 +158,13 @@ namespace GestureIndicator
                 {
                     switch (leftGesture)
                     {
-                        case HandGestureController.Gesture.Fist: leftGestureText.text = "Fist"; leftIcon.sprite = LoadAssets.Fist; break;
-                        case HandGestureController.Gesture.Open: leftGestureText.text = "Hand Open"; leftIcon.sprite = LoadAssets.OpenHand; break;
-                        case HandGestureController.Gesture.Point: leftGestureText.text = "Point"; leftIcon.sprite = LoadAssets.Point; break;
-                        case HandGestureController.Gesture.Peace: leftGestureText.text = "Victory"; leftIcon.sprite = LoadAssets.Victory; break;
-                        case HandGestureController.Gesture.RockNRoll: leftGestureText.text = "RockNRoll"; leftIcon.sprite = LoadAssets.RockAndRoll; break;
-                        case HandGestureController.Gesture.Gun: leftGestureText.text = "Hand Gun"; leftIcon.sprite = LoadAssets.FingerGun; break;
-                        case HandGestureController.Gesture.ThumbsUp: leftGestureText.text = "Thumbs Up"; leftIcon.sprite = LoadAssets.ThumbsUp; break;
+                        case HandGestureController.Gesture.Fist: leftGestureText.text = m_IconsOnly ? "" : "Fist"; leftIcon.sprite = LoadAssets.Fist; break;
+                        case HandGestureController.Gesture.Open: leftGestureText.text = m_IconsOnly ? "" : "Hand Open"; leftIcon.sprite = LoadAssets.OpenHand; break;
+                        case HandGestureController.Gesture.Point: leftGestureText.text = m_IconsOnly ? "" : "Point"; leftIcon.sprite = LoadAssets.Point; break;
+                        case HandGestureController.Gesture.Peace: leftGestureText.text = m_IconsOnly ? "" : "Victory"; leftIcon.sprite = LoadAssets.Victory; break;
+                        case HandGestureController.Gesture.RockNRoll: leftGestureText.text = m_IconsOnly ? "" : "RockNRoll"; leftIcon.sprite = LoadAssets.RockAndRoll; break;
+                        case HandGestureController.Gesture.Gun: leftGestureText.text = m_IconsOnly ? "" : "Hand Gun"; leftIcon.sprite = LoadAssets.FingerGun; break;
+                        case HandGestureController.Gesture.ThumbsUp: leftGestureText.text = m_IconsOnly ? "" : "Thumbs Up"; leftIcon.sprite = LoadAssets.ThumbsUp; break;
                     }
                     if (m_UseIcons) leftIcon.gameObject.SetActive(true);
 
@@ -186,13 +192,13 @@ namespace GestureIndicator
                 {
                     switch (rightGesture)
                     {
-                        case HandGestureController.Gesture.Fist: rightGestureText.text = "Fist"; rightIcon.sprite = LoadAssets.Fist; break;
-                        case HandGestureController.Gesture.Open: rightGestureText.text = "Hand Open"; rightIcon.sprite = LoadAssets.OpenHand; break;
-                        case HandGestureController.Gesture.Point: rightGestureText.text = "Point"; rightIcon.sprite = LoadAssets.Point; break;
-                        case HandGestureController.Gesture.Peace: rightGestureText.text = "Victory"; rightIcon.sprite = LoadAssets.Victory; break;
-                        case HandGestureController.Gesture.RockNRoll: rightGestureText.text = "RockNRoll"; rightIcon.sprite = LoadAssets.RockAndRoll; break;
-                        case HandGestureController.Gesture.Gun: rightGestureText.text = "Hand Gun"; rightIcon.sprite = LoadAssets.FingerGun; break;
-                        case HandGestureController.Gesture.ThumbsUp: rightGestureText.text = "Thumbs Up"; rightIcon.sprite = LoadAssets.ThumbsUp; break;
+                        case HandGestureController.Gesture.Fist: rightGestureText.text = m_IconsOnly ? "" : "Fist"; rightIcon.sprite = LoadAssets.Fist; break;
+                        case HandGestureController.Gesture.Open: rightGestureText.text = m_IconsOnly ? "" : "Hand Open"; rightIcon.sprite = LoadAssets.OpenHand; break;
+                        case HandGestureController.Gesture.Point: rightGestureText.text = m_IconsOnly ? "" : "Point"; rightIcon.sprite = LoadAssets.Point; break;
+                        case HandGestureController.Gesture.Peace: rightGestureText.text = m_IconsOnly ? "" : "Victory"; rightIcon.sprite = LoadAssets.Victory; break;
+                        case HandGestureController.Gesture.RockNRoll: rightGestureText.text = m_IconsOnly ? "" : "RockNRoll"; rightIcon.sprite = LoadAssets.RockAndRoll; break;
+                        case HandGestureController.Gesture.Gun: rightGestureText.text = m_IconsOnly ? "" : "Hand Gun"; rightIcon.sprite = LoadAssets.FingerGun; break;
+                        case HandGestureController.Gesture.ThumbsUp: rightGestureText.text = m_IconsOnly ? "" : "Thumbs Up"; rightIcon.sprite = LoadAssets.ThumbsUp; break;
                     }
                     if (m_UseIcons) rightIcon.gameObject.SetActive(true);
                 }
@@ -245,37 +251,53 @@ namespace GestureIndicator
             rightIcon.gameObject.SetActive(false);
             rightIcon.sprite = null;
 
-            ApplyTextColors();
+            ApplyColors();
             ApplyTextPositions();
         }
 
-        private void ApplyTextColors()
+        private void ApplyColors()
         {
-            float op = m_TextOpacity / 100.0f;
+            var textOpacity = m_TextOpacity / 100.0f;
+            var iconOpacity = m_IconOpacity / 100.0f;
 
-            Color colorL = m_LeftTextColor;
-            colorL.a = op;
-            leftGestureText.color = colorL;
-            leftIcon.color = colorL;
+            var colorL = m_LeftTextColor;
+            colorL.a = textOpacity;
 
-            Color colorR = m_RightTextColor;
-            colorR.a = op;
-            rightGestureText.color = colorR;
-            rightIcon.color = colorR;
+            if(leftGestureText != null)
+                leftGestureText.color = colorL;
+            
+            colorL.a = iconOpacity;
+            if(leftIcon != null)
+                leftIcon.color = colorL;
+
+            
+            var colorR = m_RightTextColor;
+            colorR.a = textOpacity;
+            
+            if(rightGestureText != null)
+                rightGestureText.color = colorR;
+            
+            colorR.a = iconOpacity;
+            if(rightIcon != null)
+                rightIcon.color = colorR;
         }
 
         private void ApplyTextPositions()
         {
-            leftGestureText.GetComponent<RectTransform>().anchoredPosition = new Vector2((-200f * m_X_Position) - 102.5f, -415f * m_Y_Position);
-            rightGestureText.GetComponent<RectTransform>().anchoredPosition = new Vector2((200f * m_X_Position) - 102.5f, -415f * m_Y_Position);
+            if (leftGestureText != null) 
+                leftGestureText.GetComponent<RectTransform>().anchoredPosition = new Vector2((-200f * m_X_Position) - 102.5f, -415f * m_Y_Position);
+            if (rightGestureText != null) 
+                rightGestureText.GetComponent<RectTransform>().anchoredPosition = new Vector2((200f * m_X_Position) - 102.5f, -415f * m_Y_Position);
         }
 
         private void ToggleIndicators(bool enable)
         {
             if (enable) MelonCoroutines.Start(CheckGesture());
 
-            leftGestureText.gameObject.SetActive(enable);
-            rightGestureText.gameObject.SetActive(enable);
+            if(leftGestureText != null)
+                leftGestureText.gameObject.SetActive(enable);
+            if(rightGestureText != null)
+                rightGestureText.gameObject.SetActive(enable);
         }
 
         public IEnumerator UiManagerInitializer()
