@@ -197,7 +197,7 @@ namespace ImmersiveTouch
             }
             catch { }
 
-            if (DOUBLE_SIDED.Value)
+            if (!DOUBLE_SIDED.Value)
             {
                 try
                 {
