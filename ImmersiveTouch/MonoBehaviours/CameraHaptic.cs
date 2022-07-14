@@ -50,8 +50,6 @@ namespace ImmersiveTouch
 
             asyncGPUReadbackRequest = new Action<AsyncGPUReadbackRequest>((readback) =>
             {
-                //MelonLogger.Msg(Marshal.PtrToStructure<byte>(readback.GetDataRaw(0)).ToString());
-
                 isColliding = Marshal.PtrToStructure<byte>(readback.GetDataRaw(0)) != 3;
             });
         }
