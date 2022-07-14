@@ -6,7 +6,6 @@
         <Version>1.0.2</Version>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-      <OutputPath>..\Output\</OutputPath>
     </PropertyGroup>
     <ItemGroup>
       <Reference Include="0Harmony">
@@ -43,4 +42,7 @@
 		<HintPath>..\..\..\MelonLoader\Managed\VRCCore-Editor.dll</HintPath>
 	  </Reference>
     </ItemGroup>
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+      <Exec Command="xcopy &quot;$(ProjectDir)obj\Release\net472\DragFix.dll&quot; &quot;$(SolutionDir)RELEASE\&quot; /K /D /H /Y /I" />
+    </Target>
 </Project>

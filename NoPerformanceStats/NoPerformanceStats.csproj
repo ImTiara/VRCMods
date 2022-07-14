@@ -6,7 +6,6 @@
         <Version>1.0.8</Version>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-      <OutputPath>..\Output\</OutputPath>
     </PropertyGroup>
     <ItemGroup>
       <Reference Include="0Harmony">
@@ -40,4 +39,7 @@
         <HintPath>..\..\..\MelonLoader\Managed\VRCSDKBase.dll</HintPath>
       </Reference>
     </ItemGroup>
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+      <Exec Command="xcopy &quot;$(ProjectDir)obj\Release\net472\NoPerformanceStats.dll&quot; &quot;$(SolutionDir)RELEASE\&quot; /K /D /H /Y /I" />
+    </Target>
 </Project>
