@@ -179,43 +179,27 @@ namespace ImmersiveTouch
 
         public static void DestroyImmersiveTouch()
         {
-            try // The garbage collector was being too aggressive >:(
+            if (m_LeftCameraHaptic?.WasCollected == false && m_LeftCameraHaptic != null)
             {
-                if (m_LeftCameraHaptic != null)
-                {
-                    Object.DestroyImmediate(m_LeftCameraHaptic.gameObject);
-                }
+                Object.Destroy(m_LeftCameraHaptic.gameObject);
             }
-            catch { }
 
-            try
+            if (m_RightCameraHaptic?.WasCollected == false && m_RightCameraHaptic != null)
             {
-                if (m_RightCameraHaptic != null)
-                {
-                    Object.DestroyImmediate(m_RightCameraHaptic.gameObject);
-                }
+                Object.Destroy(m_RightCameraHaptic.gameObject);
             }
-            catch { }
 
             if (!DOUBLE_SIDED.Value)
             {
-                try
+                if (m_LeftCameraHapticDouble?.WasCollected == false && m_LeftCameraHapticDouble != null)
                 {
-                    if (m_LeftCameraHapticDouble != null)
-                    {
-                        Object.DestroyImmediate(m_LeftCameraHapticDouble.gameObject);
-                    }
+                    Object.Destroy(m_LeftCameraHapticDouble.gameObject);
                 }
-                catch { }
 
-                try
+                if (m_RightCameraHapticDouble?.WasCollected == false && m_RightCameraHapticDouble != null)
                 {
-                    if (m_RightCameraHapticDouble != null)
-                    {
-                        Object.DestroyImmediate(m_RightCameraHapticDouble.gameObject);
-                    }
+                    Object.Destroy(m_RightCameraHapticDouble.gameObject);
                 }
-                catch { }
             }
         }
 
