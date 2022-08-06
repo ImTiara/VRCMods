@@ -1,3 +1,9 @@
+# **End of support**
+VRChat has ceased support for the wholesome modding community by introducing EAC (Easy Anti-Cheat) & therefore i've made the decision to quit VRChat modding entirely.
+Instead, I have moved over to [ChilloutVR](https://store.steampowered.com/app/661130/ChilloutVR/) (Check out my CVR mods [here](https://github.com/ImTiara/CVRMods)!)
+Don't worry, VRChat has taken our mod ideas and actively working on implementing them into the game itself (Gesture Indicator & Immersive Touch)!
+Thank you all who have used and enjoyed my mods & thank you all who contributed to this repository <3
+
 # ***!!!Disclaimer!!!***
 Please be aware that modifications to the VRChat client/app is a ToS violation and can lead to your account being banned.
 Use these mods at your own risk.
